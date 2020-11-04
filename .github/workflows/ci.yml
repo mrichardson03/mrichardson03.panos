@@ -1,0 +1,38 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+  
+    defaults:
+      run:
+        working-directory: ./ansible_collections/mrichardson03/panos
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: ./ansible_collections/mrichardson03/panos
+
+      - name: Set up Python
+        uses: actions/setup-python@v2.1.4
+        with:
+          python-version: 3.9
+
+      - name: Install test dependencies
+        run:
+          pip install -r requirements-dev.txt
+
+      - name: ansible-test sanity
+        run:
+          make sanity
+
+      - name: ansible-test units
+        run:
+          make units
