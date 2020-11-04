@@ -67,7 +67,7 @@ class HttpApi(HttpApiBase):
 
         api_key = self.get_option("api_key")
 
-        display.vvvv("login()")
+        display.vvvv("login(): start")
 
         # If API key was given as an option, store for further use.
         if api_key:
@@ -86,6 +86,8 @@ class HttpApi(HttpApiBase):
             self.version()
         else:
             raise AnsibleConnectionFailure("Invalid credential")
+
+        display.vvvv("login(): complete")
 
     def api_key(self):
         """ Return the API key used by this connection. """
@@ -311,6 +313,8 @@ class HttpApi(HttpApiBase):
             }
         )
 
+        display.vvvv("version = {0}".format(self._device_info))
+
         return self._device_info
 
     def is_panorama(self):
@@ -336,11 +340,12 @@ class HttpApi(HttpApiBase):
 
     def send_request(
         self,
-        data,
+        data=None,
         path="/api/",
         params=None,
         method="POST",
         headers=None,
+        request_type="xml",
         **message_kwargs,
     ):
         """
@@ -350,6 +355,7 @@ class HttpApi(HttpApiBase):
         :param path: URL path used for the API endpoint.
         :param params: Parameters to send with request (will be URL encoded).
         :param method: HTTP method to for request.
+        :param request_type: API request type ('xml' or 'json')
         :returns: Tuple (HTTP response code, data object).
 
         Error Codes:
@@ -360,15 +366,29 @@ class HttpApi(HttpApiBase):
             params = urllib.parse.urlencode(params) if params else ""
             path += "?{0}".format(params)
 
-        if headers is None:
-            headers = dict(XML_BASE_HEADERS)
+        if data is None:
+            data = {}
 
-        if data is not None:
-            headers.update({"Content-Length": len(data)})
+        if headers is None:
+            headers = {}
+
+        if request_type == "xml":
+            headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Content-Length": "0",
+                }
+            )
+        else:
+            data = json.dumps(data)
+
+            headers.update(
+                {"Content-Type": "application/json", "Content-Length": len(data)}
+            )
 
         display.vvvv("send_request(): headers = {0}".format(headers))
         display.vvvv("send_request(): method = {0}".format(method))
-        display.vvvv("send_request(): path = {0}".format(method))
+        display.vvvv("send_request(): path = {0}".format(path))
         display.vvvv("send_request(): data = {0}".format(data))
 
         try:
@@ -376,7 +396,9 @@ class HttpApi(HttpApiBase):
                 path, data, method=method, headers=headers
             )
 
-            return response.getcode(), self._handle_response(response_data)
+            return response.getcode(), self._handle_response(
+                response_data, request_type=request_type
+            )
         except HTTPError as e:
             return e.code, e.read()
 
@@ -400,12 +422,15 @@ class HttpApi(HttpApiBase):
 
         return exc
 
-    def _handle_response(self, data):
+    def _handle_response(self, data, request_type="xml"):
         data = to_text(data.getvalue())
 
         display.vvvv("_handle_response(): response = {0}".format(data))
 
-        try:
-            return json.loads(data) if data else {}
-        except ValueError:
+        if request_type == "xml":
             return data
+        else:
+            try:
+                return json.loads(data) if data else {}
+            except ValueError:
+                return data

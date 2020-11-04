@@ -2,38 +2,16 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import json
 import re
 
 from ansible.module_utils.connection import Connection
-
-BASE_HEADERS = {"Content-Type": "application/json"}
-
-
-def send_request(
-    conn,
-    data=None,
-    path=None,
-    method="GET",
-    params=None,
-    headers=None,
-):
-    if data and len(data) > 0:
-        data = json.dumps(data)
-
-    if headers is None:
-        headers = dict(BASE_HEADERS)
-
-    return conn.send_request(
-        data, path=path, method=method, params=params, headers=headers
-    )
 
 
 def add_object(conn, spec, api_endpoint):
     params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
 
-    code, data = send_request(
-        conn, path=api_endpoint, data=spec, method="POST", params=params
+    code, data = conn.send_request(
+        path=api_endpoint, data=spec, method="POST", params=params, request_type="json"
     )
 
     if code == 200:
@@ -45,8 +23,8 @@ def add_object(conn, spec, api_endpoint):
 def edit_object(conn, spec, api_endpoint):
     params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
 
-    code, data = send_request(
-        conn, path=api_endpoint, data=spec, method="PUT", params=params
+    code, data = conn.send_request(
+        path=api_endpoint, data=spec, method="PUT", params=params, request_type="json"
     )
 
     if code == 200:
@@ -58,7 +36,9 @@ def edit_object(conn, spec, api_endpoint):
 def delete_object(conn, name, api_endpoint):
     params = {"location": "vsys", "vsys": "vsys1", "name": name}
 
-    code, data = send_request(conn, path=api_endpoint, method="DELETE", params=params)
+    code, data = conn.send_request(
+        path=api_endpoint, method="DELETE", params=params, request_type="json"
+    )
 
     if code == 200:
         return True
@@ -72,10 +52,15 @@ def fetch_objects(conn, api_endpoint, name=None):
     if name:
         params.update({"name": name})
 
-    code, data = send_request(conn, path=api_endpoint, method="GET", params=params)
+    code, data = conn.send_request(
+        path=api_endpoint, method="GET", params=params, request_type="json"
+    )
 
     if code == 200:
-        return data
+        if name:
+            return data["result"]["entry"][0]
+        else:
+            return data["result"]["entry"]
     else:
         return None
 
@@ -89,14 +74,11 @@ def apply_state(module, spec, api_endpoint=None):
     spec = remove_dict_empty_keys(spec)
 
     # Fetch the existing object.
-    objs = fetch_objects(conn, spec["entry"]["@name"], api_endpoint)
-    obj = None
+    obj = fetch_objects(conn, api_endpoint, name=spec["entry"]["@name"])
 
-    if objs is not None:
-        obj = objs["result"]["entry"][0]
-
-        # Object will come back from the API with '@location' and '@vsys' keys,
-        # but they're not supposed to be in the object spec.
+    # Object will come back from the API with '@location' and '@vsys' keys,
+    # but they're not suppsoed to be in the object spec.
+    if obj is not None:
         del obj["@location"]
         del obj["@vsys"]
 
