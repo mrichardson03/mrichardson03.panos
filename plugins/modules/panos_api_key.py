@@ -37,18 +37,18 @@ api_key:
     sample: "LUFRPT14MW5xOEo1R09KVlBZNnpnemh0VHRBOWl6TGM9bXcwM3JHUGVhRlNiY0dCR0srNERUQT09"
 """
 
-from ansible.module_utils.basic import AnsibleModule
-
-from ansible.module_utils.connection import Connection
 from ansible.module_utils.connection import ConnectionError
+
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+    PanOSAnsibleModule,
+)
 
 
 def main():
-    module = AnsibleModule(argument_spec={}, supports_check_mode=False)
+    module = PanOSAnsibleModule(argument_spec={}, supports_check_mode=False)
 
     try:
-        conn = Connection(module._socket_path)
-        api_key = conn.api_key()
+        api_key = module.connection.api_key()
 
         if api_key is not None:
             module.exit_json(changed=False, api_key=api_key)

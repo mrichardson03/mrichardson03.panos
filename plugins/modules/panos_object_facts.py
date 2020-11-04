@@ -54,16 +54,15 @@ RETURN = """
 
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.connection import Connection
+from ansible.module_utils.connection import ConnectionError
 
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    fetch_objects,
+    PanOSAnsibleModule,
 )
 
 
 def main():
-    module = AnsibleModule(
+    module = PanOSAnsibleModule(
         argument_spec=dict(
             name=dict(),
             object_type=dict(
@@ -91,13 +90,11 @@ def main():
         "tag": "Tags",
     }
 
+    object_type = module.params["object_type"]
+    module.api_endpoint = "/restapi/v10.0/Objects/{0}".format(obj_types[object_type])
+
     try:
-        conn = Connection(module._socket_path)
-
-        object_type = module.params["object_type"]
-        api_endpoint = "/restapi/v10.0/Objects/{0}".format(obj_types[object_type])
-
-        objects = fetch_objects(conn, api_endpoint)
+        objects = module.fetch_objects()
 
         module.exit_json(changed=False, objects=objects["result"])
     except ConnectionError as e:

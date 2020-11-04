@@ -4,140 +4,177 @@ __metaclass__ = type
 
 import re
 
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
 
 
-def add_object(conn, spec, api_endpoint):
-    params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
+class PanOSAnsibleModule(AnsibleModule):
+    def __init__(
+        self,
+        argument_spec,
+        api_endpoint=None,
+        with_state=False,
+        with_enabled_state=False,
+        *args,
+        **kwargs
+    ):
+        spec = {}
 
-    code, data = conn.send_request(
-        path=api_endpoint, data=spec, method="POST", params=params, request_type="json"
-    )
+        self.api_endpoint = api_endpoint
 
-    if code == 200:
-        return True
-    else:
-        return False
+        if with_state:
+            spec["state"] = {"default": "present", "choices": ["present", "absent"]}
 
+        if with_enabled_state:
+            spec["state"] = {
+                "default": "present",
+                "choices": ["present", "absent", "enabled", "disabled"],
+            }
 
-def edit_object(conn, spec, api_endpoint):
-    params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
+        argument_spec.update(spec)
 
-    code, data = conn.send_request(
-        path=api_endpoint, data=spec, method="PUT", params=params, request_type="json"
-    )
+        super().__init__(argument_spec, *args, **kwargs)
 
-    if code == 200:
-        return True
-    else:
-        return False
+        self.connection = Connection(self._socket_path)
 
+    def apply_state(self, spec):
+        state = self.params["state"]
 
-def delete_object(conn, name, api_endpoint):
-    params = {"location": "vsys", "vsys": "vsys1", "name": name}
+        # Ansible defines all keys, but leaves their value set to None.  Those need
+        # cleaned up for comparison.
+        spec = remove_dict_empty_keys(spec)
 
-    code, data = conn.send_request(
-        path=api_endpoint, method="DELETE", params=params, request_type="json"
-    )
+        # Fetch the existing object.
+        obj = self.fetch_objects(name=spec["entry"]["@name"])
 
-    if code == 200:
-        return True
-    else:
-        return False
+        # Object will come back from the API with '@location' and '@vsys' keys,
+        # but they're not suppsoed to be in the object spec.
+        if obj is not None:
+            del obj["@location"]
+            del obj["@vsys"]
 
+        if state == "present":
 
-def fetch_objects(conn, api_endpoint, name=None):
-    params = {"location": "vsys", "vsys": "vsys1"}
+            # Object doesn't exist in the config, it needs to be created.
+            if obj is None:
 
-    if name:
-        params.update({"name": name})
-
-    code, data = conn.send_request(
-        path=api_endpoint, method="GET", params=params, request_type="json"
-    )
-
-    if code == 200:
-        if name:
-            return data["result"]["entry"][0]
-        else:
-            return data["result"]["entry"]
-    else:
-        return None
-
-
-def apply_state(module, spec, api_endpoint=None):
-    conn = Connection(module._socket_path)
-    state = module.params["state"]
-
-    # Ansible defines all keys, but leaves their value set to None.  Those need
-    # cleaned up for comparison.
-    spec = remove_dict_empty_keys(spec)
-
-    # Fetch the existing object.
-    obj = fetch_objects(conn, api_endpoint, name=spec["entry"]["@name"])
-
-    # Object will come back from the API with '@location' and '@vsys' keys,
-    # but they're not suppsoed to be in the object spec.
-    if obj is not None:
-        del obj["@location"]
-        del obj["@vsys"]
-
-    if state == "present":
-
-        # Object doesn't exist in the config, it needs to be created.
-        if obj is None:
-
-            if not module.check_mode:
-                if not add_object(conn, spec, api_endpoint):
-                    module.fail_json(
-                        msg="Error creating object '{0}'".format(spec["entry"]["@name"])
-                    )
-
-            module.exit_json(changed=True, object=spec)
-
-        # An object with that name exists...
-        else:
-            # There is an object with that name, but it needs modifying.
-            if spec["entry"] != obj:
-
-                if not module.check_mode:
-                    if not edit_object(conn, spec, api_endpoint):
-                        module.fail_json(
-                            msg="Error editing object '{0}'".format(
+                if not self.check_mode:
+                    if not self.add_object(spec):
+                        self.fail_json(
+                            msg="Error creating object '{0}'".format(
                                 spec["entry"]["@name"]
                             )
                         )
 
-                module.exit_json(changed=True, object=spec)
+                self.exit_json(changed=True, object=spec)
 
+            # An object with that name exists...
             else:
-                # Object already exists as desired.
-                module.exit_json(
-                    changed=False,
-                    msg="Object '{0}' already exists".format(spec["entry"]["@name"]),
-                )
+                # There is an object with that name, but it needs modifying.
+                if spec["entry"] != obj:
 
-    # state == "absent"
-    else:
+                    if not self.check_mode:
+                        if not self.edit_object(spec):
+                            self.fail_json(
+                                msg="Error editing object '{0}'".format(
+                                    spec["entry"]["@name"]
+                                )
+                            )
 
-        # Object exists, and needs to be deleted.
-        if obj is not None:
-            if delete_object(conn, spec["entry"]["@name"], api_endpoint) is True:
-                module.exit_json(
-                    changed=True,
-                    msg="Object '{0}' deleted".format(spec["entry"]["@name"]),
-                )
-            else:
-                module.fail_json(
-                    msg="Error deleting object '{0}'".format(spec["entry"]["@name"])
-                )
+                    self.exit_json(changed=True, object=spec)
 
-        # Object doesn't exist, nothing needs to be done.
+                else:
+                    # Object already exists as desired.
+                    self.exit_json(
+                        changed=False,
+                        msg="Object '{0}' already exists".format(
+                            spec["entry"]["@name"]
+                        ),
+                    )
+
+        # state == "absent"
         else:
-            module.exit_json(
-                changed=False,
-                msg="Object '{0}' does not exist".format(spec["entry"]["@name"]),
-            )
+
+            # Object exists, and needs to be deleted.
+            if obj is not None:
+                if self.delete_object(spec["entry"]["@name"]) is True:
+                    self.exit_json(
+                        changed=True,
+                        msg="Object '{0}' deleted".format(spec["entry"]["@name"]),
+                    )
+                else:
+                    self.fail_json(
+                        msg="Error deleting object '{0}'".format(spec["entry"]["@name"])
+                    )
+
+            # Object doesn't exist, nothing needs to be done.
+            else:
+                self.exit_json(
+                    changed=False,
+                    msg="Object '{0}' does not exist".format(spec["entry"]["@name"]),
+                )
+
+    def add_object(self, spec):
+        params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
+
+        code, data = self.connection.send_request(
+            path=self.api_endpoint,
+            data=spec,
+            method="POST",
+            params=params,
+            request_type="json",
+        )
+
+        if code == 200:
+            return True
+        else:
+            return False
+
+    def edit_object(self, spec):
+        params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
+
+        code, data = self.connection.send_request(
+            path=self.api_endpoint,
+            data=spec,
+            method="PUT",
+            params=params,
+            request_type="json",
+        )
+
+        if code == 200:
+            return True
+        else:
+            return False
+
+    def delete_object(self, name):
+        params = {"location": "vsys", "vsys": "vsys1", "name": name}
+
+        code, data = self.connection.send_request(
+            path=self.api_endpoint, method="DELETE", params=params, request_type="json"
+        )
+
+        if code == 200:
+            return True
+        else:
+            return False
+
+    def fetch_objects(self, name=None):
+        params = {"location": "vsys", "vsys": "vsys1"}
+
+        if name:
+            params.update({"name": name})
+
+        code, data = self.connection.send_request(
+            path=self.api_endpoint, method="GET", params=params, request_type="json"
+        )
+
+        if code == 200:
+            if name:
+                return data["result"]["entry"][0]
+            else:
+                return data["result"]["entry"]
+        else:
+            return None
 
 
 def remove_dict_empty_keys(d):

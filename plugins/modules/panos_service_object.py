@@ -42,6 +42,41 @@ options:
         description:
             - Descriptive name for this service object.
         type: str
+    tcp_override:
+        description:
+            - Specify custom TCP timeouts for this service.
+        type: bool
+        default: False
+    tcp_override_timeout:
+        description:
+            - Set the maximum TCP session timeout (in seconds) for this service.
+        type: str
+        default: 3600
+    tcp_override_halfclose_timeout:
+        description:
+            - Set the maximum length of time (in seconds) a TCP session can
+              remain open when only one side of the connection has attempted to
+              close the connection.
+        type: str
+        default: 120
+    tcp_override_timewait_timeout:
+        description:
+            - Set the maximum length of time (in seconds) a TCP session can
+              remain open after recieving the second of the two FIN packets
+              required to terminate a session, or after receiving an RST packet
+              to reset a connection.
+        type: str
+        default: 15
+    udp_override:
+        description:
+            - Specify custom UDP timeouts for this service.
+        type: bool
+        default: False
+    udp_override_timeout:
+        description:
+            - Set the maximum UDP session timeout (in seconds) for this service.
+        type: str
+        default: 30
     tag:
         description:
             - List of tags for this service object.
@@ -73,27 +108,29 @@ RETURN = """
 # Default return values
 """
 
-from ansible.module_utils.basic import AnsibleModule
-
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    apply_state,
+    PanOSAnsibleModule,
 )
 
 
-API_ENDPOINT = "/restapi/v10.0/Objects/Services"
-
-
 def main():
-    module = AnsibleModule(
+    module = PanOSAnsibleModule(
         argument_spec=dict(
             name=dict(required=True),
             protocol=dict(default="tcp", choices=["tcp", "udp"]),
             source_port=dict(type="str"),
             destination_port=dict(type="str"),
             description=dict(type="str"),
+            tcp_override=dict(type="bool", default=False),
+            tcp_override_timeout=dict(type="str", default="3600"),
+            tcp_override_halfclose_timeout=dict(type="str", default="120"),
+            tcp_override_timewait_timeout=dict(type="str", default="15"),
+            udp_override=dict(type="bool", default=False),
+            udp_override_timeout=dict(type="str", default="30"),
             tag=dict(type="list", elements="str"),
-            state=dict(type="str", default="present", choices=["present", "absent"]),
         ),
+        api_endpoint="/restapi/v10.0/Objects/Services",
+        with_state=True,
     )
 
     spec = {
@@ -110,8 +147,44 @@ def main():
         }
     }
 
+    tcp_override = {"no": {}}
+
+    if module.params["tcp_override"]:
+        tcp_override = {"yes": {}}
+
+        if module.params["tcp_override_timeout"]:
+            tcp_override["yes"].update(
+                {"timeout": module.params["tcp_override_timeout"]}
+            )
+
+        if module.params["tcp_override_halfclose_timeout"]:
+            tcp_override["yes"].update(
+                {"halfclose-timeout": module.params["tcp_override_halfclose_timeout"]}
+            )
+
+        if module.params["tcp_override_timewait_timeout"]:
+            tcp_override["yes"].update(
+                {"timewait-timeout": module.params["tcp_override_timewait_timeout"]}
+            )
+
+    if module.params["protocol"] == "tcp":
+        spec["entry"]["protocol"]["tcp"]["override"] = tcp_override
+
+    udp_override = {"no": {}}
+
+    if module.params["udp_override"]:
+        udp_override = {"yes": {}}
+
+        if module.params["udp_override_timeout"]:
+            udp_override["yes"].update(
+                {"timeout": module.params["udp_override_timeout"]}
+            )
+
+    if module.params["protocol"] == "udp":
+        spec["entry"]["protocol"]["udp"]["override"] = udp_override
+
     try:
-        apply_state(module, spec, api_endpoint=API_ENDPOINT)
+        module.apply_state(spec)
 
     except ConnectionError as e:
         module.fail_json(msg="{0}".format(e))

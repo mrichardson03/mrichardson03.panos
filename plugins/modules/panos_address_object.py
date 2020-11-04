@@ -78,18 +78,15 @@ RETURN = """
 # Default return values
 """
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.connection import ConnectionError
 
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    apply_state,
+    PanOSAnsibleModule,
 )
 
 
-API_ENDPOINT = "/restapi/v10.0/Objects/Addresses"
-
-
 def main():
-    module = AnsibleModule(
+    module = PanOSAnsibleModule(
         argument_spec=dict(
             name=dict(required=True),
             value=dict(),
@@ -98,8 +95,9 @@ def main():
             ),
             description=dict(),
             tag=dict(type="list", elements="str"),
-            state=dict(type="str", default="present", choices=["present", "absent"]),
         ),
+        api_endpoint="/restapi/v10.0/Objects/Addresses",
+        with_state=True,
     )
 
     spec = {
@@ -112,7 +110,7 @@ def main():
     }
 
     try:
-        apply_state(module, spec, api_endpoint=API_ENDPOINT)
+        module.apply_state(spec)
 
     except ConnectionError as e:
         module.fail_json(msg="{0}".format(e))

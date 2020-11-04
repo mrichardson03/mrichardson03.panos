@@ -82,26 +82,24 @@ RETURN = """
 # Default return values
 """
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.connection import ConnectionError
 
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    apply_state,
+    PanOSAnsibleModule,
 )
 
 
-API_ENDPOINT = "/restapi/v10.0/Objects/AddressGroups"
-
-
 def main():
-    module = AnsibleModule(
+    module = PanOSAnsibleModule(
         argument_spec=dict(
             name=dict(type="str", required=True),
             static_value=dict(type="list", elements="str"),
             dynamic_value=dict(),
             description=dict(),
             tag=dict(type="list", elements="str"),
-            state=dict(type="str", default="present", choices=["present", "absent"]),
         ),
+        api_endpoint="/restapi/v10.0/Objects/AddressGroups",
+        with_state=True,
         mutually_exclusive=[["static_value", "dynamic_value"]],
         supports_check_mode=True,
     )
@@ -131,7 +129,7 @@ def main():
         spec["entry"]["dynamic"] = {"filter": module.params["dynamic_value"]}
 
     try:
-        apply_state(module, spec, api_endpoint=API_ENDPOINT)
+        module.apply_state(spec)
 
     except ConnectionError as e:
         module.fail_json(msg="{0}".format(e))
