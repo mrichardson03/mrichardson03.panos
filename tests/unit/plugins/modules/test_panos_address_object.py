@@ -37,10 +37,22 @@ class TestPanosAddressObject(ModuleTestCase):
         "description": "Description One",
     }
 
+    create_result = {
+        "@name": "Test-One",
+        "ip-netmask": "1.1.1.1",
+        "description": "Description One",
+    }
+
     modify_args = {
         "name": "Test-One",
         "address_type": "fqdn",
         "value": "foo.bar.baz",
+        "description": "Unit tests are fun!",
+    }
+
+    modify_result = {
+        "@name": "Test-One",
+        "fqdn": "foo.bar.baz",
         "description": "Unit tests are fun!",
     }
 
@@ -52,6 +64,7 @@ class TestPanosAddressObject(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert result["changed"]
+        assert result["object"]["entry"] == self.create_result
 
     def test_create_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (400, None)]
@@ -69,6 +82,7 @@ class TestPanosAddressObject(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert not result["changed"]
+        assert "already exists" in result["msg"]
 
     def test_modify(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (200, None)]
@@ -76,6 +90,7 @@ class TestPanosAddressObject(ModuleTestCase):
         result = self._run_module(self.modify_args)
 
         assert result["changed"]
+        assert result["object"]["entry"] == self.modify_result
 
     def test_modify_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -90,6 +105,7 @@ class TestPanosAddressObject(ModuleTestCase):
         result = self._run_module(self.delete_args)
 
         assert result["changed"]
+        assert "deleted" in result["msg"]
 
     def test_delete_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]

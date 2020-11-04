@@ -18,7 +18,7 @@ class TestPanosApiKey(ModuleTestCase):
         result = self._run_module({})
 
         assert not result["changed"]
-        assert result["api_key"] is not None
+        assert result["api_key"] == "foo"
 
     def test_api_key_error(self, connection_mock):
         connection_mock.api_key.return_value = None

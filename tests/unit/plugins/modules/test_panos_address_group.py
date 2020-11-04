@@ -38,9 +38,21 @@ class TestPanosAddressGroup(ModuleTestCase):
         "description": "Test Group",
     }
 
+    create_result = {
+        "@name": "Test-Group",
+        "static": {"member": ["Test-One", "Test-Two"]},
+        "description": "Test Group",
+    }
+
     modify_args = {
         "name": "Test-Group",
         "static_value": ["Test-One", "Test-Two", "Test-Three"],
+        "description": "Test Group",
+    }
+
+    modify_result = {
+        "@name": "Test-Group",
+        "static": {"member": ["Test-One", "Test-Two", "Test-Three"]},
         "description": "Test Group",
     }
 
@@ -52,6 +64,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert result["changed"]
+        assert result["object"]["entry"] == self.create_result
 
     def test_create_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (400, None)]
@@ -69,6 +82,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert not result["changed"]
+        assert "object" not in result
 
     def test_modify(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (200, None)]
@@ -76,6 +90,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.modify_args)
 
         assert result["changed"]
+        assert result["object"]["entry"] == self.modify_result
 
     def test_modify_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -90,6 +105,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.delete_args)
 
         assert result["changed"]
+        assert "deleted" in result["msg"]
 
     def test_delete_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
