@@ -28,12 +28,10 @@ help:
 
 .PHONY: sanity
 sanity:  ## Run sanity tests
-	pip install -r requirements-dev.txt
 	ansible-test sanity --python $(python_version) --requirements
 
 .PHONY: units
 units:  ## Run unit tests
-	pip install -r requirements-dev.txt
 	./fix-pytest-ini.py
 	-ansible-test coverage erase # On first run, there is nothing to erase.
 	ansible-test units --python $(python_version) --coverage --requirements
@@ -41,12 +39,10 @@ units:  ## Run unit tests
 
 .PHONY: integration
 integration:  ## Run integration tests
-	pip install -r requirements-dev.txt
 	$(MAKE) -C tests/integration $(CI)
 
 .PHONY: docs
 docs:  ## Build collection documentation
-	pip install -r requirements-dev.txt
 	$(MAKE) -C docs -f Makefile.custom docs
 
 .PHONY: clean
