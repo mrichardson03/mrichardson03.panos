@@ -1,0 +1,30 @@
+---
+- hosts: firewalls
+  connection: local
+
+  vars:
+    blank_config: blank.xml
+
+  collections:
+    - mrichardson03.panos
+
+  tasks:
+    - name: Run test
+      include_tasks:
+        file: '{{ item }}'
+      loop: "{{ query('fileglob', 'firewall/*') | sort }}"
+
+- hosts: panoramas
+  connection: local
+
+  vars:
+    blank_config: blank.xml
+
+  collections:
+    - mrichardson03.panos
+
+  tasks:
+    - name: Run test
+      include_tasks:
+        file: '{{ item }}'
+      loop: "{{ query('fileglob', 'panorama/*') | sort }}"
