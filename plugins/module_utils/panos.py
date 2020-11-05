@@ -71,9 +71,6 @@ class PanOSAnsibleModule(AnsibleModule):
             # An object with that name exists...
             else:
 
-                print("obj = {0}".format(obj))
-                print("spec = {0}".format(spec["entry"]))
-
                 # There is an object with that name, but it needs modifying.
                 if spec["entry"] != obj:
 

@@ -149,8 +149,6 @@ class TestPanosServiceObject(ModuleTestCase):
 
         result = self._run_module(module_args)
 
-        print("result = {0}".format(result["object"]))
-
         assert result["changed"]
         assert result["object"]["entry"] == created_object
 
@@ -182,8 +180,6 @@ class TestPanosServiceObject(ModuleTestCase):
         }
 
         result = self._run_module(module_args)
-
-        print("result = {0}".format(result["object"]))
 
         assert result["changed"]
         assert result["object"]["entry"] == created_object

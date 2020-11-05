@@ -183,8 +183,6 @@ def main():
     if module.params["protocol"] == "udp":
         spec["entry"]["protocol"]["udp"].update(udp_override)
 
-    print("module spec = {0}".format(spec["entry"]))
-
     try:
         module.apply_state(spec)
 
