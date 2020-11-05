@@ -92,3 +92,4 @@ docs/html/
 docs/source/modules/
 
 tests/integration/inventory
+tests/integration/*.log
