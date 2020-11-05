@@ -54,13 +54,11 @@ options:
 EXAMPLES = """
 - name: Create service group 'Prod-Services'
   panos_service_group:
-    provider: '{{ provider }}'
     name: 'Prod-Services'
     value: ['ssh-tcp-22', 'mysql-tcp-3306']
 
 - name: Delete service group 'Prod-Services'
   panos_service_group:
-    provider: '{{ provider }}'
     name: 'Prod-Services'
     state: 'absent'
 """
