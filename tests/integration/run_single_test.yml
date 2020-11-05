@@ -1,0 +1,25 @@
+---
+- hosts: firewalls
+  connection: local
+
+  vars:
+    blank_config: blank.xml
+
+  collections:
+    - mrichardson03.panos
+
+  tasks:
+    - name: Run test
+      include_tasks:
+        file: 'firewall/{{ test }}.yml'
+
+- hosts: panoramas
+  connection: local
+
+  vars:
+    blank_config: blank.xml
+
+  tasks:
+    - name: Run test
+      include_tasks:
+        file: 'panorama/{{ test }}.yml'
