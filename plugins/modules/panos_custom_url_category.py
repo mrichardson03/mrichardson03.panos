@@ -89,7 +89,7 @@ def main():
                 type="str", choices=["URL List", "Category Match"], default="URL List"
             ),
         ),
-        api_endpoint="/restapi/v10.0/Objects/ApplicationFilters",
+        api_endpoint="/restapi/v10.0/Objects/CustomURLCategories",
         with_state=True,
     )
 

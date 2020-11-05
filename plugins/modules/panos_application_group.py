@@ -66,7 +66,7 @@ def main():
             tag=dict(type="list", elements="str"),
         ),
         required_if=[["state", "present", ["value"]]],
-        api_endpoint="/restapi/v10.0/Objects/ApplicationGroup",
+        api_endpoint="/restapi/v10.0/Objects/ApplicationGroups",
         with_state=True,
     )
 
