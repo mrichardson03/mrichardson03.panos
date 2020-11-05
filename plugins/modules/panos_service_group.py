@@ -102,9 +102,6 @@ def main():
     except ConnectionError as e:
         module.fail_json(msg="{0}".format(e))
 
-    # Done.
-    module.exit_json(msg="Done")
-
 
 if __name__ == "__main__":
     main()
