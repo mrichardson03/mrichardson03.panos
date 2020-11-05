@@ -26,19 +26,23 @@ options:
     category:
         description:
             - Application category
-        type: str
+        type: list
+        elements: str
     subcategory:
         description:
             - Application subcategory
-        type: str
+        type: list
+        elements: str
     technology:
         description:
             - Application technology
-        type: str
+        type: list
+        elements: str
     risk:
         description:
             - Risk (1-5) of the application
-        type: str
+        type: list
+        elements: str
         choices: ['1', '2', '3', '4', '5']
     evasive:
         description:
@@ -114,9 +118,9 @@ def main():
     module = PanOSAnsibleModule(
         argument_spec=dict(
             name=dict(type="str", required=True),
-            category=dict(type="list", element="str"),
-            subcategory=dict(type="list", element="str"),
-            technology=dict(type="list", element="str"),
+            category=dict(type="list", elements="str"),
+            subcategory=dict(type="list", elements="str"),
+            technology=dict(type="list", elements="str"),
             risk=dict(type="list", elements="str", choices=["1", "2", "3", "4", "5"]),
             evasive=dict(type="bool"),
             excessive_bandwidth_use=dict(type="bool"),
