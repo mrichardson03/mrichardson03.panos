@@ -147,41 +147,43 @@ def main():
         }
     }
 
-    tcp_override = {"no": {}}
+    tcp_override = {"override": {"no": {}}}
 
     if module.params["tcp_override"]:
-        tcp_override = {"yes": {}}
+        tcp_override = {"override": {"yes": {}}}
 
         if module.params["tcp_override_timeout"]:
-            tcp_override["yes"].update(
+            tcp_override["override"]["yes"].update(
                 {"timeout": module.params["tcp_override_timeout"]}
             )
 
         if module.params["tcp_override_halfclose_timeout"]:
-            tcp_override["yes"].update(
+            tcp_override["override"]["yes"].update(
                 {"halfclose-timeout": module.params["tcp_override_halfclose_timeout"]}
             )
 
         if module.params["tcp_override_timewait_timeout"]:
-            tcp_override["yes"].update(
+            tcp_override["override"]["yes"].update(
                 {"timewait-timeout": module.params["tcp_override_timewait_timeout"]}
             )
 
     if module.params["protocol"] == "tcp":
-        spec["entry"]["protocol"]["tcp"]["override"] = tcp_override
+        spec["entry"]["protocol"]["tcp"].update(tcp_override)
 
-    udp_override = {"no": {}}
+    udp_override = {"override": {"no": {}}}
 
     if module.params["udp_override"]:
-        udp_override = {"yes": {}}
+        udp_override = {"override": {"yes": {}}}
 
         if module.params["udp_override_timeout"]:
-            udp_override["yes"].update(
+            udp_override["override"]["yes"].update(
                 {"timeout": module.params["udp_override_timeout"]}
             )
 
     if module.params["protocol"] == "udp":
-        spec["entry"]["protocol"]["udp"]["override"] = udp_override
+        spec["entry"]["protocol"]["udp"].update(udp_override)
+
+    print("module spec = {0}".format(spec["entry"]))
 
     try:
         module.apply_state(spec)

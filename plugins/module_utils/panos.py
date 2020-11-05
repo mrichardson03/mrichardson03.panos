@@ -70,6 +70,10 @@ class PanOSAnsibleModule(AnsibleModule):
 
             # An object with that name exists...
             else:
+
+                print("obj = {0}".format(obj))
+                print("spec = {0}".format(spec["entry"]))
+
                 # There is an object with that name, but it needs modifying.
                 if spec["entry"] != obj:
 
@@ -179,18 +183,19 @@ class PanOSAnsibleModule(AnsibleModule):
 
 def remove_dict_empty_keys(d):
     """
-    Remove keys from a dictionary that have empty values.
+    Remove keys from a dictionary that have values that are either empty
+    strings or have 'None' as a value.
+
+    This specifically leaves keys that have values that are empty dictionaries
+    ('{}'), because the PAN-OS REST API has some of those.
     """
-    if type(d) is dict:
-        return dict(
-            (k, remove_dict_empty_keys(v))
-            for k, v in d.items()
-            if v and remove_dict_empty_keys(v)
-        )
-    elif type(d) is list:
-        return [remove_dict_empty_keys(v) for v in d if v and remove_dict_empty_keys(v)]
-    else:
-        return d
+    new_dict = {}
+    for k, v in d.items():
+        if isinstance(v, dict):
+            v = remove_dict_empty_keys(v)
+        if v not in (u"", None):
+            new_dict[k] = v
+    return new_dict
 
 
 def cmd_xml(cmd):
