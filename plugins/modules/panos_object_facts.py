@@ -65,7 +65,7 @@ from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
 OBJ_TYPES = {
     "address": "Addresses",
     "address-group": "AddressGroups",
-    "application": "ApplicationObjects",
+    "application": "Applications",
     "application-filter": "ApplicationFilters",
     "application-group": "ApplicationGroups",
     "custom-url-category": "CustomURLCategories",

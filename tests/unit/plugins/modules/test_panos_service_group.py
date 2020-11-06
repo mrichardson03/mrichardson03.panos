@@ -36,7 +36,7 @@ class TestPanosServiceGroup(ModuleTestCase):
         "tag": ["Tag-One"],
     }
 
-    created_object = {
+    create_result = {
         "@name": "Test-Group",
         "members": {
             "member": ["service-http", "service-https"],
@@ -50,6 +50,12 @@ class TestPanosServiceGroup(ModuleTestCase):
         "tag": ["Tag-One", "Tag-Two"],
     }
 
+    modify_result = {
+        "@name": "Test-Group",
+        "members": {"member": ["ssh-tcp-22"]},
+        "tag": ["Tag-One", "Tag-Two"],
+    }
+
     delete_args = {"name": "Test-Group", "state": "absent"}
 
     def test_create(self, connection_mock):
@@ -58,6 +64,7 @@ class TestPanosServiceGroup(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert result["changed"]
+        assert result["diff"]["after"] == self.create_result
 
     def test_create_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (400, None)]
@@ -75,6 +82,7 @@ class TestPanosServiceGroup(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert not result["changed"]
+        assert result["diff"]["after"] == self.create_result
 
     def test_modify(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (200, None)]
@@ -82,6 +90,7 @@ class TestPanosServiceGroup(ModuleTestCase):
         result = self._run_module(self.modify_args)
 
         assert result["changed"]
+        assert result["diff"]["after"] == self.modify_result
 
     def test_modify_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -96,6 +105,7 @@ class TestPanosServiceGroup(ModuleTestCase):
         result = self._run_module(self.delete_args)
 
         assert result["changed"]
+        assert result["diff"]["after"] == ""
 
     def test_delete_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -114,7 +124,8 @@ class TestPanosServiceGroup(ModuleTestCase):
         result = self._run_module(module_args)
 
         assert not result["changed"]
-        assert "does not exist" in result["msg"]
+        assert result["diff"]["before"] == ""
+        assert result["diff"]["after"] == ""
 
     def test_present_no_value(self, connection_mock):
         connection_mock.send_request.return_value = [(404, None)]
