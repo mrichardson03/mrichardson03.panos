@@ -79,7 +79,19 @@ EXAMPLES = """
 """
 
 RETURN = """
-# Default return values
+changed:
+    description: A boolean value indicating if the task had to make changes.
+    type: bool
+msg:
+    description: A string with an error message, if any.
+    type: str
+diff:
+    description:
+        - Information about the differences between the previous and current
+          state.
+        - Contains 'before' and 'after' keys.
+    type: dict
+    elements: str
 """
 
 COLOR_NAMES = [
@@ -196,7 +208,9 @@ def main():
         spec["entry"]["color"] = color_code(module.params["color"])
 
     try:
-        module.apply_state(spec)
+        changed, diff = module.apply_state(spec)
+
+        module.exit_json(changed=changed, diff=diff)
 
     except ConnectionError as e:
         module.fail_json(msg="{0}".format(e))

@@ -37,7 +37,7 @@ class TestPanosServiceObject(ModuleTestCase):
         "description": "SSH on default port",
     }
 
-    created_object = {
+    create_result = {
         "@name": "ssh-tcp-22",
         "protocol": {"tcp": {"port": "22", "override": {"no": {}}}},
         "description": "SSH on default port",
@@ -50,6 +50,12 @@ class TestPanosServiceObject(ModuleTestCase):
         "description": "Unit tests are fun!",
     }
 
+    modify_result = {
+        "@name": "ssh-tcp-22",
+        "protocol": {"tcp": {"port": "23", "override": {"no": {}}}},
+        "description": "Unit tests are fun!",
+    }
+
     delete_args = {"name": "ssh-tcp-22", "state": "absent"}
 
     def test_create(self, connection_mock):
@@ -58,6 +64,7 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert result["changed"]
+        assert result["diff"]["after"] == self.create_result
 
     def test_create_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (400, None)]
@@ -75,6 +82,7 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert not result["changed"]
+        assert result["diff"]["after"] == self.create_result
 
     def test_modify(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (200, None)]
@@ -82,6 +90,7 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(self.modify_args)
 
         assert result["changed"]
+        assert result["diff"]["after"] == self.modify_result
 
     def test_modify_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -96,6 +105,7 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(self.delete_args)
 
         assert result["changed"]
+        assert result["diff"]["after"] == ""
 
     def test_delete_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -114,7 +124,8 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(module_args)
 
         assert not result["changed"]
-        assert "does not exist" in result["msg"]
+        assert result["diff"]["before"] == ""
+        assert result["diff"]["after"] == ""
 
     def test_tcp_override(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (200, None)]
@@ -150,7 +161,7 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(module_args)
 
         assert result["changed"]
-        assert result["object"]["entry"] == created_object
+        assert result["diff"]["after"] == created_object
 
     def test_udp_override(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (200, None)]
@@ -182,4 +193,4 @@ class TestPanosServiceObject(ModuleTestCase):
         result = self._run_module(module_args)
 
         assert result["changed"]
-        assert result["object"]["entry"] == created_object
+        assert result["diff"]["after"] == created_object

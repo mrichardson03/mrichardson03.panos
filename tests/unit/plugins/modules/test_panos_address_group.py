@@ -64,7 +64,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert result["changed"]
-        assert result["object"]["entry"] == self.create_result
+        assert result["diff"]["after"] == self.create_result
 
     def test_create_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(404, None), (400, None)]
@@ -82,7 +82,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.create_args)
 
         assert not result["changed"]
-        assert "object" not in result
+        assert result["diff"]["after"] == self.create_result
 
     def test_modify(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (200, None)]
@@ -90,7 +90,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.modify_args)
 
         assert result["changed"]
-        assert result["object"]["entry"] == self.modify_result
+        assert result["diff"]["after"] == self.modify_result
 
     def test_modify_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -105,7 +105,7 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(self.delete_args)
 
         assert result["changed"]
-        assert "deleted" in result["msg"]
+        assert result["diff"]["after"] == ""
 
     def test_delete_fail(self, connection_mock):
         connection_mock.send_request.side_effect = [(200, self.response), (400, None)]
@@ -124,4 +124,5 @@ class TestPanosAddressGroup(ModuleTestCase):
         result = self._run_module(module_args)
 
         assert not result["changed"]
-        assert "does not exist" in result["msg"]
+        assert result["diff"]["before"] == ""
+        assert result["diff"]["after"] == ""
