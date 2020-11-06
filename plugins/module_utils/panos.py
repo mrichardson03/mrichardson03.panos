@@ -53,6 +53,9 @@ class PanOSAnsibleModule(AnsibleModule):
             del obj["@location"]
             del obj["@vsys"]
 
+        changed = False
+        diff = None
+
         if state == "present":
 
             # Object doesn't exist in the config, it needs to be created.
@@ -66,7 +69,8 @@ class PanOSAnsibleModule(AnsibleModule):
                             )
                         )
 
-                self.exit_json(changed=True, object=spec)
+                changed = True
+                diff = {"before": "", "after": spec["entry"]}
 
             # An object with that name exists...
             else:
@@ -82,16 +86,12 @@ class PanOSAnsibleModule(AnsibleModule):
                                 )
                             )
 
-                    self.exit_json(changed=True, object=spec)
+                    changed = True
+                    diff = {"before": obj, "after": spec["entry"]}
 
                 else:
                     # Object already exists as desired.
-                    self.exit_json(
-                        changed=False,
-                        msg="Object '{0}' already exists".format(
-                            spec["entry"]["@name"]
-                        ),
-                    )
+                    diff = {"before": obj, "after": spec["entry"]}
 
         # state == "absent"
         else:
@@ -99,10 +99,9 @@ class PanOSAnsibleModule(AnsibleModule):
             # Object exists, and needs to be deleted.
             if obj is not None:
                 if self.delete_object(spec["entry"]["@name"]) is True:
-                    self.exit_json(
-                        changed=True,
-                        msg="Object '{0}' deleted".format(spec["entry"]["@name"]),
-                    )
+                    changed = True
+                    diff = {"before": obj, "after": ""}
+
                 else:
                     self.fail_json(
                         msg="Error deleting object '{0}'".format(spec["entry"]["@name"])
@@ -110,10 +109,9 @@ class PanOSAnsibleModule(AnsibleModule):
 
             # Object doesn't exist, nothing needs to be done.
             else:
-                self.exit_json(
-                    changed=False,
-                    msg="Object '{0}' does not exist".format(spec["entry"]["@name"]),
-                )
+                diff = {"before": "", "after": ""}
+
+        return changed, diff
 
     def add_object(self, spec):
         params = {"location": "vsys", "vsys": "vsys1", "name": spec["entry"]["@name"]}
