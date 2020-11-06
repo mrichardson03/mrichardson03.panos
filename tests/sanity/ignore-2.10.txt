@@ -5,6 +5,7 @@ plugins/modules/panos_application_group.py validate-modules:missing-gplv3-licens
 plugins/modules/panos_application_object.py validate-modules:missing-gplv3-license
 plugins/modules/panos_api_key.py validate-modules:missing-gplv3-license
 plugins/modules/panos_custom_url_category.py validate-modules:missing-gplv3-license
+plugins/modules/panos_dynamic_user_group.py validate-modules:missing-gplv3-license
 plugins/modules/panos_object_facts.py validate-modules:missing-gplv3-license
 plugins/modules/panos_op.py validate-modules:missing-gplv3-license
 plugins/modules/panos_region.py validate-modules:missing-gplv3-license
