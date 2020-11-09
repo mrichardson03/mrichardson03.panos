@@ -23,6 +23,7 @@ options:
 import xml.etree.ElementTree
 
 import json
+import time
 
 from ansible.utils.display import Display
 
@@ -223,12 +224,12 @@ class HttpApi(HttpApiBase):
 
     def commit(
         self,
-        validate=True,
         force=False,
         partial=False,
         exclude_device_and_network=False,
         exclude_shared_object=False,
         admins=None,
+        description=None,
     ):
         """
         Commits the candidate configuration to the device.
@@ -244,7 +245,16 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/commit-configuration-api/commit.html
         """
-        pass
+        cmd = "commit"
+
+        if description:
+            cmd += " description '{0}'".format(description)
+
+        params = {"type": "commit", "key": self._api_key, "cmd": cmd_xml(cmd)}
+
+        code, data = self.send_request({}, params=params)
+
+        return data
 
     def commit_all(self, validate=False, device_groups=None, vsys=None, serials=None):
         """
@@ -316,6 +326,37 @@ class HttpApi(HttpApiBase):
         display.vvvv("version = {0}".format(self._device_info))
 
         return self._device_info
+
+    def poll_for_job(self, job_id, interval=5):
+        """
+        Polls for job completion.
+
+        :param job_id: ID of job to poll for.
+        :param interval: Poll interval, in seconds.
+        """
+        cmd = "<show><jobs><id>{0}</id></jobs></show>".format(job_id)
+
+        display.vvvv(
+            "poll_for_job(): job_id = {0}, interval = {1}".format(job_id, interval)
+        )
+
+        while True:
+            result = self.op(cmd, is_xml=True)
+
+            root = xml.etree.ElementTree.fromstring(result)
+            status = root.find("./result/job/status")
+
+            if status is None:
+                raise AnsibleConnectionFailure("Could not find status element in job.")
+
+            display.vvvv(
+                "poll_for_job(): job_id {0} status = {1}".format(job_id, status.text)
+            )
+
+            if status.text == "FIN":
+                return result
+            else:
+                time.sleep(interval)
 
     def is_panorama(self):
         """
