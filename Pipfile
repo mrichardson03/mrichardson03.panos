@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+xmltodict = "==0.12.0"
+requests = "==2.22.0"
+jmespath = "==0.9.4"
+
+[dev-packages]
+black = "*"
+ansible = "*"
+pytest = "*"
+isort = "*"
+coverage = "*"
+flake8 = "*"
+pytest-xdist = "*"
+pytest-mock = "*"
+pylint = "*"
+voluptuous = "*"
+
+[requires]
+python_version = "3.6"
+
+[pipenv]
+allow_prereleases = true
