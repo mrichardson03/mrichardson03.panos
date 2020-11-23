@@ -10,13 +10,13 @@ from ansible.module_utils.connection import Connection
 
 class PanOSAnsibleModule(AnsibleModule):
     def __init__(
-        self,
-        argument_spec,
-        api_endpoint=None,
-        with_state=False,
-        with_enabled_state=False,
-        *args,
-        **kwargs
+            self,
+            argument_spec,
+            api_endpoint=None,
+            with_state=False,
+            with_enabled_state=False,
+            *args,
+            **kwargs
     ):
         spec = {}
 
@@ -48,7 +48,7 @@ class PanOSAnsibleModule(AnsibleModule):
         obj = self.fetch_objects(name=spec["entry"]["@name"])
 
         # Object will come back from the API with '@location' and '@vsys' keys,
-        # but they're not suppsoed to be in the object spec.
+        # but they're not supposed to be in the object spec.
         if obj is not None:
             del obj["@location"]
             del obj["@vsys"]
@@ -174,6 +174,36 @@ class PanOSAnsibleModule(AnsibleModule):
                 return data["result"]["entry"]
         else:
             return None
+
+    def set_at_xpath(self, xpath, element):
+
+        existing = self.connection.get(xpath)
+
+        if existing is None:
+            existing = ''
+            changed = True
+
+        elif existing == element:
+            changed = False
+
+        else:
+            changed = True
+
+        if changed:
+            # do not perform set if element is already present
+            code, data = self.connection.set(xpath, element)
+
+            if code != 200:
+                self.fail_json(msg='Could not set element at xpath {0}'.format(xpath))
+
+        after = self.connection.get(xpath)
+
+        if after == existing:
+            changed = False
+
+        diff = {'before': existing, 'after': after}
+
+        return changed, diff
 
 
 def remove_dict_empty_keys(d):

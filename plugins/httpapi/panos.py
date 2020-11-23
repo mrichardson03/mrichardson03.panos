@@ -57,7 +57,7 @@ class HttpApi(HttpApiBase):
         Handle PAN-OS API authentication.
 
         Plugin can use an optional API key.  If it is provided, the plugin will
-        store it for futher calls.
+        store it for further calls.
 
         If an API key is not provided, one will be generated using the given
         username and password, and stored for further calls.
@@ -158,7 +158,16 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/configuration-api/set-configuration.html
         """
-        pass
+
+        params = {
+            "type": "config",
+            "key": self._api_key,
+            "action": "set",
+            "xpath": xpath,
+            "element": element,
+        }
+
+        return self.send_request({}, params=params)
 
     def edit(self, xpath, element):
         """
@@ -396,6 +405,7 @@ class HttpApi(HttpApiBase):
         :param path: URL path used for the API endpoint.
         :param params: Parameters to send with request (will be URL encoded).
         :param method: HTTP method to for request.
+        :param headers: HTTP headers to include in request.
         :param request_type: API request type ('xml' or 'json')
         :returns: Tuple (HTTP response code, data object).
 
