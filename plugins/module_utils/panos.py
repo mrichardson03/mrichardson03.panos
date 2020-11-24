@@ -19,13 +19,13 @@ class PanOSAPIError(ConnectionError):
 
 class PanOSAnsibleModule(AnsibleModule):
     def __init__(
-            self,
-            argument_spec,
-            api_endpoint=None,
-            with_state=False,
-            with_enabled_state=False,
-            *args,
-            **kwargs
+        self,
+        argument_spec,
+        api_endpoint=None,
+        with_state=False,
+        with_enabled_state=False,
+        *args,
+        **kwargs
     ):
         spec = {}
 

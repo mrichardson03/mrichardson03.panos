@@ -50,6 +50,12 @@ clean:  ## Remove all auto-generated files
 	$(MAKE) -C docs -f Makefile.custom clean
 	rm -rf tests/output
 
+format:
+	black .
+
+check-format:
+	black --check .
+
 sync-deps:
 	poetry export -f requirements.txt > requirements.txt
 	poetry export -f requirements.txt --dev > requirements-dev.txt
