@@ -14,7 +14,7 @@ class TestPanosConfigElement(ModuleTestCase):
 
     def test_existing_element(self, connection_mock):
 
-        element = '<some>xml</some>'
+        element = "<some>xml</some>"
         connection_mock.get.return_value = element
 
         result = self._run_module({"xpath": "/some/xpath", "element": element})
@@ -28,7 +28,10 @@ class TestPanosConfigElement(ModuleTestCase):
         new_element = '<entry name="hi again">more xml</entry>'
 
         connection_mock.get.side_effect = [existing_element, new_element]
-        connection_mock.set.return_value = 200, '<response status="success" code="20"><result/></response>'
+        connection_mock.set.return_value = (
+            200,
+            '<response status="success" code="20"><result/></response>',
+        )
 
         result = self._run_module({"xpath": "/some/xpath", "element": new_element})
 
