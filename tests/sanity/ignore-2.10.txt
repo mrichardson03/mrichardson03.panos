@@ -14,3 +14,4 @@ plugins/modules/panos_schedule_object.py validate-modules:missing-gplv3-license
 plugins/modules/panos_service_object.py validate-modules:missing-gplv3-license
 plugins/modules/panos_service_group.py validate-modules:missing-gplv3-license
 plugins/modules/panos_tag_object.py validate-modules:missing-gplv3-license
+plugins/modules/panos_config_element.py validate-modules:missing-gplv3-license

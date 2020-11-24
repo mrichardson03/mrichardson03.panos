@@ -35,6 +35,8 @@ from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import UnauthorizedError
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import PanOSAPIError
 
 display = Display()
 
@@ -57,7 +59,7 @@ class HttpApi(HttpApiBase):
         Handle PAN-OS API authentication.
 
         Plugin can use an optional API key.  If it is provided, the plugin will
-        store it for futher calls.
+        store it for further calls.
 
         If an API key is not provided, one will be generated using the given
         username and password, and stored for further calls.
@@ -158,7 +160,18 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/configuration-api/set-configuration.html
         """
-        pass
+
+        params = {
+            "type": "config",
+            "key": self._api_key,
+            "action": "set",
+            "xpath": xpath,
+            "element": element,
+        }
+
+        code, response = self.send_request({}, params=params)
+
+        return self._validate_response(code, response)
 
     def edit(self, xpath, element):
         """
@@ -172,7 +185,17 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/configuration-api/edit-configuration.html
         """
-        pass
+        params = {
+            "type": "config",
+            "key": self._api_key,
+            "action": "edit",
+            "xpath": xpath,
+            "element": element,
+        }
+
+        code, response = self.send_request({}, params=params)
+
+        return self._validate_response(code, response)
 
     def delete(self, xpath):
         """
@@ -396,6 +419,7 @@ class HttpApi(HttpApiBase):
         :param path: URL path used for the API endpoint.
         :param params: Parameters to send with request (will be URL encoded).
         :param method: HTTP method to for request.
+        :param headers: HTTP headers to include in request.
         :param request_type: API request type ('xml' or 'json')
         :returns: Tuple (HTTP response code, data object).
 
@@ -463,7 +487,8 @@ class HttpApi(HttpApiBase):
 
         return exc
 
-    def _handle_response(self, data, request_type="xml"):
+    @staticmethod
+    def _handle_response(data, request_type="xml"):
         data = to_text(data.getvalue())
 
         display.vvvv("_handle_response(): response = {0}".format(data))
@@ -475,3 +500,33 @@ class HttpApi(HttpApiBase):
                 return json.loads(data) if data else {}
             except ValueError:
                 return data
+
+    @staticmethod
+    def _validate_response(code, response):
+
+        if code == 403:
+            raise UnauthorizedError('Unauthorized Request to PAN-OS API')
+
+        if code != 200:
+            raise ConnectionError('Error Connecting to PAN-OS API!')
+
+        data = to_text(response)
+        root = xml.etree.ElementTree.fromstring(data)
+
+        if 'status' not in root.attrib or 'code' not in root.attrib:
+            raise PanOSAPIError('Unknown Response from PAN-OS API')
+
+        status = root.attrib['status']
+        api_code = root.attrib['code']
+
+        if status != 'success':
+            raise PanOSAPIError('API Call status was not found or not successful: {0}'.format(api_code))
+
+        if api_code == '16':
+            raise UnauthorizedError('API Call was unauthorized')
+
+        if api_code not in ['19', '20']:
+            raise PanOSAPIError('API Call was not successful: {0}'.format(api_code))
+
+        # FIXME - Should we unwrap the response/result here for ease of use for all calling modules?
+        return data
