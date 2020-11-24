@@ -6,17 +6,26 @@ import re
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
+from ansible.module_utils.connection import ConnectionError
+
+
+class UnauthorizedError(ConnectionError):
+    pass
+
+
+class PanOSAPIError(ConnectionError):
+    pass
 
 
 class PanOSAnsibleModule(AnsibleModule):
     def __init__(
-        self,
-        argument_spec,
-        api_endpoint=None,
-        with_state=False,
-        with_enabled_state=False,
-        *args,
-        **kwargs
+            self,
+            argument_spec,
+            api_endpoint=None,
+            with_state=False,
+            with_enabled_state=False,
+            *args,
+            **kwargs
     ):
         spec = {}
 
@@ -48,7 +57,7 @@ class PanOSAnsibleModule(AnsibleModule):
         obj = self.fetch_objects(name=spec["entry"]["@name"])
 
         # Object will come back from the API with '@location' and '@vsys' keys,
-        # but they're not suppsoed to be in the object spec.
+        # but they're not supposed to be in the object spec.
         if obj is not None:
             del obj["@location"]
             del obj["@vsys"]
