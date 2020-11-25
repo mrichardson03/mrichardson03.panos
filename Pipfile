@@ -19,7 +19,8 @@ pytest-xdist = "*"
 pytest-mock = "*"
 pylint = "*"
 voluptuous = "*"
-importlib-metadata = "*"
+importlib-metadata = "==1.7.0"
+dataclasses = "*"
 
 [requires]
 python_version = "3.6"
