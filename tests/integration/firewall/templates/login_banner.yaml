@@ -1,0 +1,13 @@
+name: login_banner.yaml
+description: sets the login banner
+
+variables:
+  - name: banner_text
+    description: Banner Text
+    default: This is my login banner
+    type_hint: text
+
+snippets:
+  - name: login banner
+    xpath: '/config/devices/entry[@name="localhost.localdomain"]/deviceconfig/system'
+    element: '<login-banner>{{ banner_text }}</login-banner>'
