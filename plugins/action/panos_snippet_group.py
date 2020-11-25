@@ -29,7 +29,6 @@ display = Display()
 
 
 class ActionModule(ActionBase):
-
     @staticmethod
     def _extract_snippet_group_variables(snippet_group_def):
         """
@@ -42,17 +41,17 @@ class ActionModule(ActionBase):
         :return: dict of variable key/value pairs
         """
 
-        display.vvv('snippet_group_def is')
+        display.vvv("snippet_group_def is")
         display.vvv(str(snippet_group_def))
 
-        variables_list = snippet_group_def.get('variables', [])
+        variables_list = snippet_group_def.get("variables", [])
 
         display.vvv(str(variables_list))
 
         task_var_defaults = dict()
         for v in variables_list:
-            var_name = v['name']
-            var_default = v['default']
+            var_name = v["name"]
+            var_default = v["default"]
 
             task_var_defaults[var_name] = var_default
 
@@ -63,16 +62,16 @@ class ActionModule(ActionBase):
         # run default action module first
         result = super(ActionModule, self).run(tmp, task_vars)
 
-        source = self._task.args.get('src', None)
+        source = self._task.args.get("src", None)
 
         try:
-            src_file = self._find_needle('templates', source)
+            src_file = self._find_needle("templates", source)
         except AnsibleError as e:
             raise AnsibleActionFail(to_text(e))
 
-        with open(src_file, 'rb') as f:
+        with open(src_file, "rb") as f:
             try:
-                src_file_data = to_text(f.read(), errors='surrogate_or_strict')
+                src_file_data = to_text(f.read(), errors="surrogate_or_strict")
 
                 snippet_group = yaml.safe_load(src_file_data)
 
@@ -81,7 +80,7 @@ class ActionModule(ActionBase):
             except YAMLError:
                 raise AnsibleActionFail("Could not load Snippets file")
 
-        if 'snippets' not in snippet_group:
+        if "snippets" not in snippet_group:
             raise AnsibleActionFail("Could not load Snippets file")
 
         # grab the default values from the snippet_group definition
@@ -90,32 +89,30 @@ class ActionModule(ActionBase):
         # allow user to override any variable defined therein via the task_vars
         task_var_defaults.update(task_vars)
 
-        for snippet in snippet_group['snippets']:
-            snippet_name = snippet.get('name', None)
-            xpath_tpl = snippet.get('xpath', None)
-            element_tpl = snippet.get('element', None)
-            cmd = snippet.get('cmd', 'set')
+        for snippet in snippet_group["snippets"]:
+            snippet_name = snippet.get("name", None)
+            xpath_tpl = snippet.get("xpath", None)
+            element_tpl = snippet.get("element", None)
+            cmd = snippet.get("cmd", "set")
 
-            if cmd == 'edit':
+            if cmd == "edit":
                 override = True
             else:
                 override = False
 
-            with self._templar.set_temporary_context(available_variables=task_var_defaults):
+            with self._templar.set_temporary_context(
+                available_variables=task_var_defaults
+            ):
                 xpath = self._templar.do_template(xpath_tpl)
                 element = self._templar.do_template(element_tpl)
 
-                display.vvv('xpath is now: {0}'.format(xpath))
-                display.vvv('element is now: {0}'.format(element))
+                display.vvv("xpath is now: {0}".format(xpath))
+                display.vvv("element is now: {0}".format(element))
 
-                module_args = {
-                    'xpath': xpath,
-                    'element': element,
-                    'override': override
-                }
+                module_args = {"xpath": xpath, "element": element, "override": override}
 
                 snippet_result = self._execute_module(
-                    module_name='panos_config_element',
+                    module_name="panos_config_element",
                     module_args=module_args,
                     task_vars=task_var_defaults,
                 )
@@ -123,7 +120,7 @@ class ActionModule(ActionBase):
                 result[snippet_name] = snippet_result
                 display.vvv(str(snippet_result))
 
-                if snippet_result.get('changed', True):
-                    result['changed'] = True
+                if snippet_result.get("changed", True):
+                    result["changed"] = True
 
         return result
