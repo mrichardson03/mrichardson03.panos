@@ -56,6 +56,7 @@ diff:
 
 from ansible.module_utils.connection import ConnectionError
 
+
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
@@ -64,8 +65,9 @@ from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
 def main():
     module = PanOSAnsibleModule(
         argument_spec=dict(
-            xpath=dict(required=True), element=dict(required=True),
-            override=dict(type="bool", default=False, required=False)
+            xpath=dict(required=True),
+            element=dict(required=True),
+            override=dict(type="bool", default=False, required=False),
         ),
         supports_check_mode=True,
     )
@@ -73,7 +75,7 @@ def main():
     xpath = module.params["xpath"]
     element = module.params["element"]
 
-    override = module.params.get('override', False)
+    override = module.params.get("override", False)
 
     try:
         existing = module.connection.get(xpath)
@@ -89,7 +91,7 @@ def main():
             else:
                 module.connection.set(xpath, element)
 
-        diff = {'before': existing, 'after': element}
+        diff = {"before": existing, "after": element}
 
         module.exit_json(changed=changed, diff=diff)
 

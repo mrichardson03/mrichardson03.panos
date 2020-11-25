@@ -28,13 +28,13 @@ help:
 
 .PHONY: sanity
 sanity:  ## Run sanity tests
-	ansible-test sanity --python $(python_version) --requirements
+	ansible-test sanity --python $(python_version)
 
 .PHONY: units
 units:  ## Run unit tests
 	./fix-pytest-ini.py
 	-ansible-test coverage erase # On first run, there is nothing to erase.
-	ansible-test units --python $(python_version) --coverage --requirements
+	ansible-test units --python $(python_version) --coverage
 	ansible-test coverage html
 
 .PHONY: integration
@@ -49,6 +49,14 @@ docs:  ## Build collection documentation
 clean:  ## Remove all auto-generated files
 	$(MAKE) -C docs -f Makefile.custom clean
 	rm -rf tests/output
+
+format:
+	black .
+	isort .
+
+check-format:
+	black --check .
+	isort --check .
 
 sync-deps:
 	poetry export -f requirements.txt > requirements.txt

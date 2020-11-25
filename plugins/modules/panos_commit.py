@@ -80,7 +80,6 @@ except ImportError:
     HAS_LIB = False
 
 from ansible.module_utils.connection import ConnectionError
-
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )

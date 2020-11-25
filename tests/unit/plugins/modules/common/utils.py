@@ -4,10 +4,9 @@ __metaclass__ = type
 
 import json
 
+import pytest
 from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
-
-import pytest
 
 # Adapted from https://github.com/ansible/ansible/blob/devel/test/units/modules/utils.py
 # Replicated here for out of band collection development.
