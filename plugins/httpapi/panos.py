@@ -20,26 +20,20 @@ options:
             - name: ansible_api_key
 """
 
-import xml.etree.ElementTree
-
 import json
 import time
-
-from ansible.utils.display import Display
+import xml.etree.ElementTree
 
 from ansible.errors import AnsibleConnectionFailure
-from ansible.plugins.httpapi import HttpApiBase
-
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
-
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    UnauthorizedError,
-)
+from ansible.plugins.httpapi import HttpApiBase
+from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAPIError,
+    UnauthorizedError,
+    cmd_xml,
 )
 
 display = Display()
