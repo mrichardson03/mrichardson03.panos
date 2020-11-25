@@ -3,18 +3,13 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import json
-
-import pytest
-
 from unittest import mock
 
+import pytest
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.six import BytesIO, StringIO
 from ansible.module_utils.six.moves.urllib.error import HTTPError
-
-from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import (
-    HttpApi,
-)
+from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
 
 GOOD_KEYGEN = """
 <response><result><key>foo</key></result></response>
