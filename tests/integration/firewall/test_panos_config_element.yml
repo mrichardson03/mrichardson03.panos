@@ -9,29 +9,36 @@
     element: '<login-banner>{{ banner_text }}</login-banner>'
   register: result
 
-- name: debug_result
-  debug: msg={{ result }}
-
 - name: test_panos_config_element - Assert create was successful
   assert:
     that:
       - result is success
       - result is changed
 
-- name: test_panos_config_element - Modify
+- name: test_panos_config_element - - Create (idempotence)
   vars:
-    banner_text: new banner again
+    banner_text: new banner
   panos_config_element:
     xpath: '/config/devices/entry[@name="localhost.localdomain"]/deviceconfig/system'
     element: '<login-banner>{{ banner_text }}</login-banner>'
   register: result
 
-- name: debug_result
-  debug: msg={{ result }}
+- name: test_panos_config_element - Assert create (idempotence) was successful
+  assert:
+    that:
+      - result is success
+      - result is not changed
 
-- name: test_panos_config_element - Assert modify was successful
+- name: test_panos_config_element - Modify
+  vars:
+    banner_text: another banner
+  panos_config_element:
+    xpath: '/config/devices/entry[@name="localhost.localdomain"]/deviceconfig/system'
+    element: '<login-banner>{{ banner_text }}</login-banner>'
+  register: result
+
+- name: test_panos_config_element - Assert Modify was successful
   assert:
     that:
       - result is success
       - result is changed
-
