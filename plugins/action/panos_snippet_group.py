@@ -17,13 +17,11 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import yaml
-from ansible.errors import AnsibleActionFail
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleActionFail, AnsibleError
 from ansible.module_utils._text import to_text
 from ansible.plugins.action import ActionBase
-from yaml.error import YAMLError
-
 from ansible.utils.display import Display
+from yaml.error import YAMLError
 
 display = Display()
 

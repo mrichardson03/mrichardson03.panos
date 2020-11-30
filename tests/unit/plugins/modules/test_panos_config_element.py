@@ -4,7 +4,6 @@ __metaclass__ = type
 
 from ansible_collections.mrichardson03.panos.plugins.modules import panos_config_element
 
-
 from .common.utils import ModuleTestCase
 
 
