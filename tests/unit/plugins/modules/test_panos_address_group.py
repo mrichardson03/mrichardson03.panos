@@ -4,9 +4,7 @@ __metaclass__ = type
 
 from ansible_collections.mrichardson03.panos.plugins.modules import panos_address_group
 
-from .common.utils import (
-    ModuleTestCase,
-)
+from .common.utils import ModuleTestCase
 
 GET_RESPONSE = {
     "@status": "success",

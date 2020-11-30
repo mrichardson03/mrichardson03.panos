@@ -37,7 +37,7 @@
     element: '<login-banner>{{ banner_text }}</login-banner>'
   register: result
 
-- name: test_panos_config_element - Assert Modify was successful
+- name: test_panos_config_element - Assert modify was successful
   assert:
     that:
       - result is success
