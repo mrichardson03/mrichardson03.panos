@@ -20,9 +20,6 @@ class TestPanosConfigElement(ModuleTestCase):
 
         connection_mock.get.return_value = element_get
 
-        import pydevd_pycharm
-        pydevd_pycharm.settrace('localhost', port=52001, stdoutToServer=True, stderrToServer=True)
-
         result = self._run_module({"xpath": "/some/xpath", "element": element_set})
 
         assert not result["changed"]
