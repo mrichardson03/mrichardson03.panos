@@ -14,8 +14,10 @@ class TestPanosConfigElement(ModuleTestCase):
 
         element_set = "<some>xml</some>"
 
-        # get will return xml wrapped in last node in xpath, along with possibly other items at the same level
-        element_get = "<response><result><xpath><some>xml</some><other_tag></other_tag></xpath></result></response>"
+        # get will return xml wrapped in last node in xpath, along with possibly other
+        # items at the same level
+        element_get = "<response><result><xpath><some>xml</some><other_tag>" \
+                      "</other_tag></xpath></result></response>"
 
         connection_mock.get.return_value = element_get
 
