@@ -12,13 +12,21 @@ class TestPanosConfigElement(ModuleTestCase):
 
     def test_existing_element(self, connection_mock):
 
-        element = "<some>xml</some>"
-        connection_mock.get.return_value = element
+        element_set = "<some>xml</some>"
 
-        result = self._run_module({"xpath": "/some/xpath", "element": element})
+        # get will return xml wrapped in last node in xpath, along with possibly other
+        # items at the same level
+        element_get = (
+            "<response><result><xpath><some>xml</some><other_tag>"
+            "</other_tag></xpath></result></response>"
+        )
+
+        connection_mock.get.return_value = element_get
+
+        result = self._run_module({"xpath": "/some/xpath", "element": element_set})
 
         assert not result["changed"]
-        assert result["diff"] == {"before": element, "after": element}
+        assert result["diff"] == {"before": element_get, "after": element_set}
 
     def test_changed_element(self, connection_mock):
 
@@ -26,6 +34,7 @@ class TestPanosConfigElement(ModuleTestCase):
         new_element = '<entry name="hi again">more xml</entry>'
 
         connection_mock.get.side_effect = [existing_element, new_element]
+
         connection_mock.set.return_value = (
             200,
             '<response status="success" code="20"><result/></response>',
