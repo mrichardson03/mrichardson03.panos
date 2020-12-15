@@ -4,9 +4,7 @@ __metaclass__ = type
 
 from ansible_collections.mrichardson03.panos.plugins.modules import panos_object_facts
 
-from .common.utils import (
-    ModuleTestCase,
-)
+from .common.utils import ModuleTestCase
 
 GET_ALL = {
     "@status": "success",
