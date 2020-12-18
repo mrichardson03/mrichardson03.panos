@@ -1,0 +1,59 @@
+<update-schedule>
+  <threats>
+    <recurring>
+      <every-30-mins>
+        <at>2</at>
+        <action>download-and-install</action>
+      </every-30-mins>
+      <threshold>48</threshold>
+    </recurring>
+  </threats>
+  <anti-virus>
+    <recurring>
+      <hourly>
+        <at>4</at>
+        <action>download-and-install</action>
+      </hourly>
+    </recurring>
+  </anti-virus>
+  <wildfire>
+    <recurring>
+      <real-time/>
+    </recurring>
+  </wildfire>
+  <global-protect-datafile>
+    <recurring>
+      <hourly>
+        <at>40</at>
+        <action>download-and-install</action>
+      </hourly>
+    </recurring>
+  </global-protect-datafile>
+  <global-protect-clientless-vpn>
+    <recurring>
+      <hourly>
+        <at>50</at>
+        <action>download-and-install</action>
+      </hourly>
+    </recurring>
+  </global-protect-clientless-vpn>
+</update-schedule>
+<snmp-setting>
+  <access-setting>
+    <version>
+      <v3/>
+    </version>
+  </access-setting>
+</snmp-setting>
+<ntp-servers>
+  <primary-ntp-server>
+    <ntp-server-address>{{ ntp_primary }}</ntp-server-address>
+  </primary-ntp-server>
+  <secondary-ntp-server>
+    <ntp-server-address>{{ ntp_secondary }}</ntp-server-address>
+  </secondary-ntp-server>
+</ntp-servers>
+<login-banner>You have accessed a protected system.
+Log off immediately if you are not an authorized user.</login-banner>
+<timezone>UTC</timezone>
+<hostname>{{ fw_name }}</hostname>
