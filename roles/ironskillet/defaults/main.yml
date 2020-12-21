@@ -1,5 +1,5 @@
 ---
-fw_name: panos-01
+fw_name: '{{ inventory_hostname }}'
 
 configure_dns: False
 dns_primary: 8.8.8.8
