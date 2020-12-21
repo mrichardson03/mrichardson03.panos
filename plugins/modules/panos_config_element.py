@@ -33,6 +33,7 @@ options:
         description:
             - Override existing configuration elements if True, otherwise, merge with existing configuration elements
         type: bool
+        default: False
         required: false
 """
 
