@@ -44,7 +44,6 @@ options:
         description:
             - The XML snippet to be inserted into the PAN-OS configuration
         type: str
-        required: true
     override:
         description:
             - Override existing configuration elements if True, otherwise, merge with existing configuration elements
@@ -113,6 +112,9 @@ def main():
         diff = {}
 
         if state == "present":
+            if element is None:
+                module.fail_json(msg="'element' is required when state is 'present'.")
+
             if not __is_present(existing, element):
                 changed = True
 
