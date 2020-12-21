@@ -29,10 +29,11 @@ author:
     - 'Nathan Embery (@nembery)'
 version_added: '1.0.0'
 requirements: []
-
 notes:
     - Checkmode is supported.
     - Panorama is supported.
+extends_documentation_fragment:
+    - mrichardson03.panos.fragments.state
 options:
     xpath:
         description:
@@ -87,10 +88,11 @@ def main():
     module = PanOSAnsibleModule(
         argument_spec=dict(
             xpath=dict(required=True),
-            element=dict(required=True),
+            element=dict(required=False),
             override=dict(type="bool", default=False, required=False),
         ),
         supports_check_mode=True,
+        with_state=True,
     )
 
     if not HAS_LIB:
@@ -98,28 +100,38 @@ def main():
 
     xpath = module.params["xpath"]
     element = module.params["element"]
-
-    override = module.params.get("override", False)
+    override = module.params["override"]
+    state = module.params["state"]
 
     try:
         existing_response = module.connection.get(xpath)
-
         existing_object = xmltodict.parse(existing_response)
 
         existing = existing_object.get("response", {}).get("result", {})
 
-        changed = True
+        changed = False
+        diff = {}
 
-        if __is_present(existing, element) or module.check_mode:
-            changed = False
+        if state == "present":
+            if not __is_present(existing, element):
+                changed = True
 
-        if changed:
-            if override:
-                module.connection.edit(xpath, element)
-            else:
-                module.connection.set(xpath, element)
+                if not module.check_mode:
+                    if override:
+                        module.connection.edit(xpath, element)
+                    else:
+                        module.connection.set(xpath, element)
 
-        diff = {"before": existing_response, "after": element}
+                    diff = {"before": existing_response, "after": element}
+
+        else:
+            if existing is not {}:
+                changed = True
+
+                if not module.check_mode:
+                    module.connection.delete(xpath)
+
+                diff = {"before": existing_response, "after": ""}
 
         module.exit_json(changed=changed, diff=diff)
 
