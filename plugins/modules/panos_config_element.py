@@ -202,6 +202,13 @@ def __is_subset(small, large):
 
         return False
 
+    elif small is None and isinstance(large, dict):
+        # handle cases where we have a bare tag in the candidate config
+        # then candidate will only contain the metadata attributes
+        # todo: is there a better way to do this?
+        if list(large.keys()).sort() == ["@dirtyId", "@admin", "@time"].sort():
+            return True
+
     # failsafe
     return False
 
