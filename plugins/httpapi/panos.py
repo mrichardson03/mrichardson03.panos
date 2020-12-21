@@ -167,7 +167,8 @@ class HttpApi(HttpApiBase):
             "element": element,
         }
 
-        code, response = self.send_request({}, params=params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
 
         return self._validate_response(code, response)
 
@@ -191,7 +192,8 @@ class HttpApi(HttpApiBase):
             "element": element,
         }
 
-        code, response = self.send_request({}, params=params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
 
         return self._validate_response(code, response)
 
@@ -439,7 +441,7 @@ class HttpApi(HttpApiBase):
             headers.update(
                 {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "Content-Length": "0",
+                    "Content-Length": len(data),
                 }
             )
         else:
