@@ -1,0 +1,22 @@
+---
+fw_name: '{{ inventory_hostname }}'
+
+configure_dns: False
+dns_primary: 8.8.8.8
+dns_secondary: 8.8.4.4
+
+ntp_primary: 0.pool.ntp.org
+ntp_secondary: 1.pool.ntp.org
+
+sinkhole_ipv4: sinkhole.paloaltonetworks.com
+sinkhole_ipv6: 2600:5200::1
+
+email_profile_gateway: 192.0.2.1
+email_profile_from: sentfrom@yourdomain.com
+email_profile_to: sendto@yourdomain.com
+
+syslog_server: 192.0.2.2
+
+api_key_lifetime: 525600
+
+include_panw_edl: False

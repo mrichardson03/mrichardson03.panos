@@ -1,4 +1,19 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#  Copyright 2020 Palo Alto Networks, Inc
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 from __future__ import absolute_import, division, print_function
 
@@ -33,6 +48,7 @@ options:
         description:
             - Override existing configuration elements if True, otherwise, merge with existing configuration elements
         type: bool
+        default: False
         required: false
 """
 
@@ -112,9 +128,20 @@ def main():
 
 
 def __is_present(existing, snippet_string):
+    """
+    Simple function to check if a snippet is present in the object as returned from the XML API
+
+    :param existing: object as returned from the module.connection.get method
+    :param snippet_string: snippet string we want to add
+    :return: boolean True if found to be present
+    """
 
     # snippets must not include the surrounding tag info, which means they are not valid XML by themselves
     wrapped_snippet = "<wrapped>" + snippet_string + "</wrapped>"
+
+    # if existing object does not exist, then it can't be present
+    if not existing:
+        return False
 
     try:
         snippet = xmltodict.parse(wrapped_snippet)
@@ -146,6 +173,13 @@ def __is_subset(small, large):
 
             elif not __is_subset(small[key], large[key]):
                 return False
+
+        return True
+
+    elif isinstance(small, dict) and isinstance(large, list):
+
+        if not any(__is_subset(small, l_item) for l_item in large):
+            return False
 
         return True
 
