@@ -1,38 +1,97 @@
-Role Name
-=========
+# ironskillet
 
-A brief description of the role goes here.
+An Ansible Role that installs a set of best practices configuration to a
+Palo Alto Networks NGFW.
 
-Requirements
-------------
+Supports PAN-OS 10.0.
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+## Requirements
 
-Role Variables
---------------
+None.
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+## Role Variables
 
-Dependencies
-------------
+Available variables are listed below, along with default values
+(see `defaults/main.yml`):
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+```
+fw_name: '{{ inventory_hostname }}'
+```
 
-Example Playbook
-----------------
+Sets the name of the firewall. Default is to use the hostname as defined in
+the Ansible inventory.
+
+```
+configure_dns: False
+dns_primary: 8.8.8.8
+dns_secondary: 8.8.4.4
+```
+
+DNS configuration options. DNS servers are only modified to these values if
+`configure_dns` is set to `True`.
+
+```
+ntp_primary: 0.pool.ntp.org
+ntp_secondary: 1.pool.ntp.org
+```
+
+NTP configuration options.
+
+```
+sinkhole_ipv4: sinkhole.paloaltonetworks.com
+sinkhole_ipv6: 2600:5200::1
+```
+
+Servers to use for the [DNS Sinkhole](https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/threat-prevention/use-dns-queries-to-identify-infected-hosts-on-the-network/dns-sinkholing.html)
+functionality in the created Anti-Spyware profile.
+
+```
+email_profile_gateway: 192.0.2.1
+email_profile_from: sentfrom@yourdomain.com
+email_profile_to: sendto@yourdomain.com
+```
+
+Default values for the created email logging profile.
+
+```
+syslog_server: 192.0.2.2
+```
+
+Default values for the created syslog profile.
+
+```
+api_key_lifetime: 525600
+```
+
+Configured API key lifetime.
+
+```
+include_panw_edl: False
+```
+
+Create security rules referencing the built-in External Dynamic Lists
+**panw-highrisk-ip-list**, **panw-known-ip-list**, **panw-bulletproof-ip-list**.
+
+## Dependencies
+
+None.
+
+## Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
+    - hosts: firewalls
+
       roles:
-         - { role: username.rolename, x: 42 }
+         - mrichardson03.panos.ironskillet
 
-License
--------
+## License
 
-BSD
+MIT
 
-Author Information
-------------------
+## Authors
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+- Scott Shoaf (@scotchoaf)
+- Bob Hagen (@stealthllama)
+- Nate Embery (@nembery)
+- Michael Richardson (@mrichardson03)
