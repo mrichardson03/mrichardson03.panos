@@ -1,0 +1,131 @@
+---
+- name: "{{ panos_release }} - DNS"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting
+    element: "{{ lookup('template', panos_release + '/device_system_dns.xml.j2') }}"
+  when: configure_dns
+
+- name: "{{ panos_release }} - System"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system
+    element: "{{ lookup('template', panos_release + '/device_system.xml.j2') }}"
+
+- name: "{{ panos_release }} - Device Settings"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+    element: "{{ lookup('template', panos_release + '/device_setting.xml.j2') }}"
+
+- name: "{{ panos_release }} - Password Complexity"
+  panos_config_element:
+    xpath: /config/mgt-config/password-complexity
+    element: "{{ lookup('template', panos_release + '/password_complexity.xml.j2') }}"
+
+- name: "{{ panos_release }} - Shared Log Settings"
+  panos_config_element:
+    xpath: /config/shared/log-settings
+    element: "{{ lookup('template', panos_release + '/shared_log_settings.xml.j2') }}"
+
+- name: "{{ panos_release }} - Shared Log Settings - Email Profile"
+  panos_config_element:
+    xpath: /config/shared/log-settings
+    element: "{{ lookup('template', panos_release + '/shared_log_settings_email_profile.xml.j2') }}"
+
+- name: "{{ panos_release }} - Shared Log Settings - Email Profile (System Critical)"
+  panos_config_element:
+    xpath: /config/shared/log-settings/system/match-list
+    element: "{{ lookup('template', panos_release + '/shared_log_settings_email_system_critical.xml.j2') }}"
+
+- name: "{{ panos_release }} - Tags"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/tag
+    element: "{{ lookup('template', panos_release + '/tag.xml.j2') }}"
+
+- name: "{{ panos_release }} - Log Profiles"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles
+    element: "{{ lookup('template', panos_release + '/log_settings_profiles.xml.j2') }}"
+
+- name: "{{ panos_release }} - Log Profiles Email"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles/entry[@name='default']/match-list
+    element: "{{ lookup('template', panos_release + '/log_settings_profiles_email.xml.j2') }}"
+
+- name: "{{ panos_release }} - Custom URL Categories"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/custom-url-category
+    element: "{{ lookup('template', panos_release + '/profiles_custom_url_category.xml.j2') }}"
+
+- name: "{{ panos_release }} - Decryption Profiles"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/decryption
+    element: "{{ lookup('template', panos_release + '/profiles_decryption.xml.j2') }}"
+
+- name: "{{ panos_release }} - Anti-Virus"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus
+    element: "{{ lookup('template', panos_release + '/profiles_virus.xml.j2') }}"
+
+- name: "{{ panos_release }} - Spyware"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware
+    element: "{{ lookup('template', panos_release + '/profiles_spyware.xml.j2') }}"
+
+- name: "{{ panos_release }} - Vulnerability"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability
+    element: "{{ lookup('template', panos_release + '/profiles_vulnerability.xml.j2') }}"
+
+- name: "{{ panos_release }} - File Blocking"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/file-blocking
+    element: "{{ lookup('template', panos_release + '/profiles_file_blocking.xml.j2') }}"
+
+- name: "{{ panos_release }} - URL Filtering"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering
+    element: "{{ lookup('template', panos_release + '/profiles_url_filtering.xml.j2') }}"
+
+- name: "{{ panos_release }} - Wildfire"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/wildfire-analysis
+    element: "{{ lookup('template', panos_release + '/profiles_wildfire_analysis.xml.j2') }}"
+
+- name: "{{ panos_release }} - Security Profile Group"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group
+    element: "{{ lookup('template', panos_release + '/profile_group.xml.j2') }}"
+
+- name: "{{ panos_release }} - Default Security Rules"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/default-security-rules
+    element: "{{ lookup('template', panos_release + '/rulebase_default_security_rules.xml.j2') }}"
+  
+- name: "{{ panos_release }} - Security Rules"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase
+    element: "{{ lookup('template', panos_release + '/rulebase_security.xml.j2') }}"
+  
+- name: "{{ panos_release }} - Decryption Rules"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/decryption
+    element: "{{ lookup('template', panos_release + '/rulebase_decryption.xml.j2') }}"
+
+- name: "{{ panos_release }} - Zone Protection Profile"
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile
+    element: "{{ lookup('template', panos_release + '/zone_protection_profile.xml.j2') }}"
+
+- name: "{{ panos_release }} - Reports"
+  panos_config_element:
+    xpath: /config/shared/reports
+    element: "{{ lookup('template', panos_release + '/reports_simple.xml.j2') }}"
+
+- name: "{{ panos_release }} - Report Group"
+  panos_config_element:
+    xpath: /config/shared/report-group
+    element: "{{ lookup('template', panos_release + '/report_group_simple.xml.j2') }}"
+
+- name: "{{ panos_release }} - Reports Email Scheduler"
+  panos_config_element:
+    xpath: /config/shared/email-scheduler
+    element: "{{ lookup('template', panos_release + '/email_scheduler_simple.xml.j2') }}"

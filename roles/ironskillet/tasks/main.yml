@@ -1,0 +1,9 @@
+---
+- name: Retrieve PAN-OS version
+  panos_facts:
+
+- set_fact:
+    panos_release: "panos-{{ ansible_net_version.split('.')[0:2] | join('.') }}"
+
+- include_tasks: "{{ panos_release }}.yml"
+  when: panos_release == 'panos-10.0'
