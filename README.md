@@ -15,6 +15,9 @@ a number of key ways:
 - Modules interface with the PAN-OS XML API directly, rather than using an
   intermediate library. This collection only depends on the Python modules
   `xmltodict` and `requests`, which are included with Ansible Tower by default.
+- **Not backwards compatible.** Option names have been kept the same where
+  appropriate, but this collection differs from **paloaltonetworks.panos** in
+  countless ways (no more `provider` parameter, no `commit` parameter, etc).
 
 ## Installation
 
