@@ -75,7 +75,7 @@ EXAMPLES = """
 
 - name: Delete address object 'Test-One'
   panos_config_element:
-    xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address/entry[@name='Test-One]
+    xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address/entry[@name='Test-One']"
     state: 'absent'
 """
 
