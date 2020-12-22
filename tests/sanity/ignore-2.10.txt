@@ -1,12 +1,6 @@
-plugins/modules/panos_address_group.py validate-modules:missing-gplv3-license
-plugins/modules/panos_address_object.py validate-modules:missing-gplv3-license
 plugins/modules/panos_api_key.py validate-modules:missing-gplv3-license
 plugins/modules/panos_commit.py validate-modules:missing-gplv3-license
-plugins/modules/panos_facts.py validate-modules:missing-gplv3-license
-plugins/modules/panos_object_facts.py validate-modules:missing-gplv3-license
-plugins/modules/panos_op.py validate-modules:missing-gplv3-license
-plugins/modules/panos_service_object.py validate-modules:missing-gplv3-license
-plugins/modules/panos_service_group.py validate-modules:missing-gplv3-license
-plugins/modules/panos_tag_object.py validate-modules:missing-gplv3-license
 plugins/modules/panos_config_element.py validate-modules:missing-gplv3-license
+plugins/modules/panos_facts.py validate-modules:missing-gplv3-license
+plugins/modules/panos_op.py validate-modules:missing-gplv3-license
 plugins/modules/panos_snippet_group.py validate-modules:missing-gplv3-license
