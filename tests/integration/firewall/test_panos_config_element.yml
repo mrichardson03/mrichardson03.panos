@@ -43,6 +43,18 @@
       - result is success
       - result is changed
 
+- name: test_panos_config_element - Delete
+  panos_config_element:
+    xpath: '/config/devices/entry[@name="localhost.localdomain"]/deviceconfig/system/login-banner'
+    state: absent
+  register: result
+
+- name: test_panos_config_element - Assert delete was successful
+  assert:
+    that:
+      - result is success
+      - result is changed
+
 - name: test_panos_config_element - List Entry Create
   panos_config_element:
     xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address"
@@ -175,6 +187,13 @@
   register: result
 
 - name: test_panos_config_element - Assert Complex object entry Create was successful
+- name: test_panos_config_element - List Delete
+  panos_config_element:
+    xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address/entry[@name='Test-Two']"
+    state: absent
+  register: result
+
+- name: test_panos_config_element - Assert delete was successful
   assert:
     that:
       - result is success

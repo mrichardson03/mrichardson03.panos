@@ -222,7 +222,17 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/configuration-api/delete-configuration.html
         """
-        pass
+        params = {
+            "type": "config",
+            "key": self._api_key,
+            "action": "delete",
+            "xpath": xpath,
+        }
+
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
+
+        return self._validate_response(code, response)
 
     def rename(self, xpath, newname):
         """
