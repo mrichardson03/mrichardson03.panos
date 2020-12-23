@@ -23,12 +23,43 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection, ConnectionError
 
 
-class UnauthorizedError(ConnectionError):
-    pass
+PANOS_API_CODES = {
+    "400": "Bad Request",
+    "403": "Forbidden",
+    "1": "Unknown Command",
+    "2": "Internal Error",
+    "3": "Internal Error",
+    "4": "Internal Error",
+    "5": "Internal Error",
+    "6": "Bad Xpath",
+    "7": "Object not present",
+    "8": "Object not unique",
+    "10": "Reference count not zero",
+    "11": "Internal Error",
+    "12": "Invalid Object",
+    "14": "Operation Not Possible",
+    "15": "Operation Denied",
+    "16": "Unauthorized",
+    "17": "Invalid Command",
+    "18": "Malformed Command",
+    "19": "Success",
+    "20": "Success",
+    "21": "Internal Error",
+    "22": "Session Timed Out",
+}
 
 
 class PanOSAPIError(ConnectionError):
-    pass
+    def __init__(self, api_code):
+        self.api_code = api_code
+
+    def __str__(self):
+        if self.api_code not in PANOS_API_CODES.keys():
+            msg = "UNDOCUMENTED API ERROR CODE"
+        else:
+            msg = PANOS_API_CODES[self.api_code]
+
+        return "{0}: {1}".format(self.code, msg)
 
 
 class PanOSAnsibleModule(AnsibleModule):

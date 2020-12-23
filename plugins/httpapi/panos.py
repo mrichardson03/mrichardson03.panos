@@ -46,7 +46,6 @@ from ansible.plugins.httpapi import HttpApiBase
 from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAPIError,
-    UnauthorizedError,
     cmd_xml,
 )
 
@@ -60,52 +59,27 @@ class HttpApi(HttpApiBase):
         self._api_key = None
         self._device_info = None
 
-    def login(self, username=None, password=None):
+    def api_key(self):
         """
-        Handle PAN-OS API authentication.
+        Return the API key used by this connection.
 
-        Plugin can use an optional API key.  If it is provided, the plugin will
-        store it for further calls.
-
-        If an API key is not provided, one will be generated using the given
-        username and password, and stored for further calls.
-
-        :param username: Username used for API key generation.
-        :param password: Password used for API key generation.
+        If the plugin is set to authenticate using a username and password,
+        one will be generated and reused by this method.
         """
+        if self._api_key:  # pragma: no cover
+            return self._api_key
 
-        display.vvvv("login(): start")
-
-        if username is None:
+        if self.get_option("api_key") is not None:
+            self._api_key = self.get_option("api_key")
+        else:
             username = self.connection.get_option("remote_user")
-
-        if password is None:
             password = self.connection.get_option("password")
 
-        api_key = self.get_option("api_key")
-
-        # If API key was given as an option, store for further use.
-        if api_key:
-            self._api_key = api_key
-        else:
-            if not username and not password:
-                raise AnsibleConnectionFailure("Username and password are required")
-            else:
-                # If API key was not specified, generate one and store it.
-                key = self.keygen(username, password)
-                display.vvvv("storing api key = {0}".format(key))
-                self._api_key = key
+            self._api_key = self.keygen(username, password)
 
         # Refresh device info after successful login.
-        if self._api_key is not None:
-            self.version()
-        else:
-            raise AnsibleConnectionFailure("Invalid credential")
+        self.version()
 
-        display.vvvv("login(): complete")
-
-    def api_key(self):
-        """ Return the API key used by this connection. """
         return self._api_key
 
     def keygen(self, username, password):
@@ -123,7 +97,6 @@ class HttpApi(HttpApiBase):
         """
         params = {"type": "keygen", "user": username, "password": password}
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -157,12 +130,11 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/configuration-api/get-candidate-configuration.html
         """
-        params = {"type": "config", "key": self._api_key, "action": "get"}
+        params = {"type": "config", "key": self.api_key(), "action": "get"}
 
         if xpath:
             params.update({"xpath": xpath})
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -181,13 +153,12 @@ class HttpApi(HttpApiBase):
 
         params = {
             "type": "config",
-            "key": self._api_key,
+            "key": self.api_key(),
             "action": "set",
             "xpath": xpath,
             "element": element,
         }
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -207,13 +178,12 @@ class HttpApi(HttpApiBase):
         """
         params = {
             "type": "config",
-            "key": self._api_key,
+            "key": self.api_key(),
             "action": "edit",
             "xpath": xpath,
             "element": element,
         }
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -230,12 +200,11 @@ class HttpApi(HttpApiBase):
         """
         params = {
             "type": "config",
-            "key": self._api_key,
+            "key": self.api_key(),
             "action": "delete",
             "xpath": xpath,
         }
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -306,9 +275,8 @@ class HttpApi(HttpApiBase):
         if description:
             cmd += " description '{0}'".format(description)
 
-        params = {"type": "commit", "key": self._api_key, "cmd": cmd_xml(cmd)}
+        params = {"type": "commit", "key": self.api_key(), "cmd": cmd_xml(cmd)}
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -342,11 +310,10 @@ class HttpApi(HttpApiBase):
 
         params = {
             "type": "op",
-            "key": self._api_key,
+            "key": self.api_key(),
             "cmd": cmd if is_xml else cmd_xml(cmd),
         }
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
         return self._validate_response(code, response)
@@ -365,12 +332,11 @@ class HttpApi(HttpApiBase):
 
         :returns: Dict containing device info.
         """
-        if self._device_info:
+        if self._device_info:  # pragma: no cover
             return self._device_info
 
-        params = {"type": "version", "key": self._api_key}
+        params = {"type": "version", "key": self.api_key()}
 
-        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -439,7 +405,7 @@ class HttpApi(HttpApiBase):
         established, None if not.
         """
         if self._api_key:
-            return {"X-PAN-KEY": self._api_key}
+            return {"X-PAN-KEY": self.api_key()}
         else:
             return None
 
@@ -494,70 +460,32 @@ class HttpApi(HttpApiBase):
                 path, data, method=method, headers=headers
             )
 
+            display.vvvv(
+                "send_request(): response code = {0}".format(response.getcode())
+            )
+
             return response.getcode(), response_data.getvalue()
         except HTTPError as e:
             return e.code, e.read()
 
-    def handle_httperror(self, exc):
-
-        if exc.code == 401:
-            if self.connection._auth:
-                # Stored auth appears to be invalid, clear and retry.
-                self.connection._auth = None
-                self.login(
-                    self.connection.get_option("remote_user"),
-                    self.connection.get_option("password"),
-                )
-                return True
-            else:
-                # Unauthorized and there's no token.  Return an error.
-                return False
-
-        elif exc.code == 404:
-            return False
-
-        return exc
-
     @staticmethod
-    def _check_auth(params):
-        """
-        Raise an exception if an API request is being sent without
-        authentication.
-        """
-        if params.get("key") is None and params.get("type") != "keygen":
-            raise AnsibleConnectionFailure(
-                "Can't send {0} type without key".format(params["type"])
-            )
+    def _validate_response(http_code, http_response):
 
-    @staticmethod
-    def _validate_response(code, response):
+        # XML API piggybacks on HTTP 400 and 403 error codes.
+        if http_code not in [200, 400, 403]:
+            raise ConnectionError("Invalid response from API")
 
-        if code == 403:
-            raise UnauthorizedError("Unauthorized Request to PAN-OS API")
-
-        if code != 200:
-            raise ConnectionError("Error Connecting to PAN-OS API!")
-
-        data = to_text(response)
+        data = to_text(http_response)
         root = xml.etree.ElementTree.fromstring(data)
 
-        if "status" not in root.attrib or "code" not in root.attrib:
-            raise PanOSAPIError("Unknown Response from PAN-OS API")
+        status = root.attrib.get("status")
+        api_code = root.attrib.get("code")
 
-        status = root.attrib["status"]
-        api_code = root.attrib["code"]
-
+        # Successful responses that AREN'T keygen type all have 'success'
+        # attributes.
         if status != "success":
-            raise PanOSAPIError(
-                "API Call status was not found or not successful: {0}".format(api_code)
-            )
+            raise PanOSAPIError(api_code)
 
-        if api_code == "16":
-            raise UnauthorizedError("API Call was unauthorized")
-
-        if api_code not in ["19", "20"]:
-            raise PanOSAPIError("API Call was not successful: {0}".format(api_code))
-
-        # FIXME - Should we unwrap the response/result here for ease of use for
-        # all calling modules?
+        # For whatever reason, Ansible wants a JSON serializable resposne ONLY,
+        # so return unparsed data.
         return data
