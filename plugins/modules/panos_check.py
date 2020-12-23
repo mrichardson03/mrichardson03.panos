@@ -80,6 +80,8 @@ def check_autocommit(jobs):
         else:
             return False
 
+    # If we get to this point, the autocommit job is no longer in the job
+    # history and it is assumed the device is ready.
     return True
 
 
