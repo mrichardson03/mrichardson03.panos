@@ -50,26 +50,21 @@ class TestPanosHttpApi:
         self.connection_mock = mock.Mock()
         self.plugin = FakeHttpApiPlugin(self.connection_mock)
 
-    @patch.object(HttpApi, "version")
     @patch.object(HttpApi, "keygen")
-    def test_api_key_generate(self, mock_keygen, mock_version):
+    def test_api_key_generate(self, mock_keygen):
         self.connection_mock.get_option.side_effect = ["USERNAME", "PASSWORD"]
-        mock_version.return_value = {}
         mock_keygen.return_value = "foo"
 
         ret_value = self.plugin.api_key()
 
         assert ret_value == "foo"
 
-    @patch.object(HttpApi, "version")
-    def test_api_key_specified(self, mock_version):
+    def test_api_key_specified(self):
         self.plugin.set_option("api_key", "foo")
-        mock_version.return_value = {}
 
         ret_value = self.plugin.api_key()
 
         assert ret_value == "foo"
-        assert mock_version.call_count == 1
 
     @pytest.mark.parametrize(
         "response,status,expected",
