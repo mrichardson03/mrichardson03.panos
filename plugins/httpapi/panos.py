@@ -77,9 +77,6 @@ class HttpApi(HttpApiBase):
 
             self._api_key = self.keygen(username, password)
 
-        # Refresh device info after successful login.
-        self.version()
-
         return self._api_key
 
     def keygen(self, username, password):
@@ -477,6 +474,8 @@ class HttpApi(HttpApiBase):
 
         data = to_text(http_response)
         root = xml.etree.ElementTree.fromstring(data)
+
+        display.vvvv("_validate_response(): response = {0}".format(data))
 
         status = root.attrib.get("status")
         api_code = root.attrib.get("code")
