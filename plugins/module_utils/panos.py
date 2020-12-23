@@ -58,7 +58,7 @@ class PanOSAPIError(ConnectionError):
         else:
             msg = PANOS_API_CODES[self.api_code]
 
-        return "{0}: {1}".format(self.code, msg)
+        return repr("{0}: {1}".format(self.api_code, msg))
 
 
 class PanOSAnsibleModule(AnsibleModule):
