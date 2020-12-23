@@ -89,13 +89,6 @@ def main():
     module = PanOSAnsibleModule(argument_spec={}, supports_check_mode=False)
 
     try:
-        # This module is commonly called in a loop to check and see if a device
-        # is ready for configuration, and can call the API before the device is
-        # fully booted, which results in an 'Invalid Credential' error.  To get
-        # around this, force the login process each time.
-        if module.connection.api_key() is None:
-            module.connection.login()
-
         result = module.connection.op("show jobs all")
         jobs = xml.etree.ElementTree.fromstring(result).findall(".//job")
 
