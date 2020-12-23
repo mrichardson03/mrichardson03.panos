@@ -35,7 +35,6 @@ options:
             - name: ansible_api_key
 """
 
-import json
 import time
 import xml.etree.ElementTree
 
@@ -52,12 +51,6 @@ from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
 )
 
 display = Display()
-
-XML_BASE_HEADERS = {
-    "Content-Type": "application/x-www-form-urlencoded",
-}
-
-JSON_BASE_HEADERS = {"Content-Type": "application/json"}
 
 
 class HttpApi(HttpApiBase):
@@ -129,9 +122,12 @@ class HttpApi(HttpApiBase):
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/get-started-with-the-pan-os-xml-api/get-your-api-key.html
         """
         params = {"type": "keygen", "user": username, "password": password}
-        code, data = self.send_request({}, params=params, headers=XML_BASE_HEADERS)
 
-        root = xml.etree.ElementTree.fromstring(data)
+        self._check_auth(params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
+
+        root = xml.etree.ElementTree.fromstring(response)
         key = root.find("./result/key")
 
         if key is not None:
@@ -166,8 +162,11 @@ class HttpApi(HttpApiBase):
         if xpath:
             params.update({"xpath": xpath})
 
-        code, data = self.send_request({}, params=params)
-        return data
+        self._check_auth(params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
+
+        return self._validate_response(code, response)
 
     def set(self, xpath, element):
         """
@@ -188,6 +187,7 @@ class HttpApi(HttpApiBase):
             "element": element,
         }
 
+        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -213,6 +213,7 @@ class HttpApi(HttpApiBase):
             "element": element,
         }
 
+        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -234,6 +235,7 @@ class HttpApi(HttpApiBase):
             "xpath": xpath,
         }
 
+        self._check_auth(params)
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
@@ -306,9 +308,11 @@ class HttpApi(HttpApiBase):
 
         params = {"type": "commit", "key": self._api_key, "cmd": cmd_xml(cmd)}
 
-        code, data = self.send_request({}, params=params)
+        self._check_auth(params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
 
-        return data
+        return self._validate_response(code, response)
 
     def commit_all(self, validate=False, device_groups=None, vsys=None, serials=None):
         """
@@ -335,8 +339,6 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/run-operational-mode-commands-api.html
         """
-        if self._api_key is None:
-            raise AnsibleConnectionFailure("Can't send op request without key")
 
         params = {
             "type": "op",
@@ -344,8 +346,10 @@ class HttpApi(HttpApiBase):
             "cmd": cmd if is_xml else cmd_xml(cmd),
         }
 
-        code, data = self.send_request({}, params=params)
-        return data
+        self._check_auth(params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
+        return self._validate_response(code, response)
 
     # reports
     # export
@@ -365,9 +369,12 @@ class HttpApi(HttpApiBase):
             return self._device_info
 
         params = {"type": "version", "key": self._api_key}
-        code, data = self.send_request({}, params=params)
 
-        root = xml.etree.ElementTree.fromstring(data)
+        self._check_auth(params)
+        data = urllib.parse.urlencode(params)
+        code, response = self.send_request(data)
+
+        root = xml.etree.ElementTree.fromstring(response)
         result = root.find("./result")
 
         self._device_info = {}
@@ -443,7 +450,6 @@ class HttpApi(HttpApiBase):
         params=None,
         method="POST",
         headers=None,
-        request_type="xml",
         **message_kwargs,
     ):
         """
@@ -471,19 +477,12 @@ class HttpApi(HttpApiBase):
         if headers is None:
             headers = {}
 
-        if request_type == "xml":
-            headers.update(
-                {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Content-Length": len(data),
-                }
-            )
-        else:
-            data = json.dumps(data)
-
-            headers.update(
-                {"Content-Type": "application/json", "Content-Length": len(data)}
-            )
+        headers.update(
+            {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Length": len(data),
+            }
+        )
 
         display.vvvv("send_request(): headers = {0}".format(headers))
         display.vvvv("send_request(): method = {0}".format(method))
@@ -495,9 +494,7 @@ class HttpApi(HttpApiBase):
                 path, data, method=method, headers=headers
             )
 
-            return response.getcode(), self._handle_response(
-                response_data, request_type=request_type
-            )
+            return response.getcode(), response_data.getvalue()
         except HTTPError as e:
             return e.code, e.read()
 
@@ -522,18 +519,15 @@ class HttpApi(HttpApiBase):
         return exc
 
     @staticmethod
-    def _handle_response(data, request_type="xml"):
-        data = to_text(data.getvalue())
-
-        display.vvvv("_handle_response(): response = {0}".format(data))
-
-        if request_type == "xml":
-            return data
-        else:
-            try:
-                return json.loads(data) if data else {}
-            except ValueError:
-                return data
+    def _check_auth(params):
+        """
+        Raise an exception if an API request is being sent without
+        authentication.
+        """
+        if params.get("key") is None and params.get("type") != "keygen":
+            raise AnsibleConnectionFailure(
+                "Can't send {0} type without key".format(params["type"])
+            )
 
     @staticmethod
     def _validate_response(code, response):
