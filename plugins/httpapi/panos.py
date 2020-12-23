@@ -81,9 +81,15 @@ class HttpApi(HttpApiBase):
         :param password: Password used for API key generation.
         """
 
-        api_key = self.get_option("api_key")
-
         display.vvvv("login(): start")
+
+        if username is None:
+            username = self.connection.get_option("remote_user")
+
+        if password is None:
+            password = self.connection.get_option("password")
+
+        api_key = self.get_option("api_key")
 
         # If API key was given as an option, store for further use.
         if api_key:
@@ -329,6 +335,9 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/run-operational-mode-commands-api.html
         """
+        if self._api_key is None:
+            raise AnsibleConnectionFailure("Can't send op request without key")
+
         params = {
             "type": "op",
             "key": self._api_key,
