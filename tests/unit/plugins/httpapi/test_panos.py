@@ -74,13 +74,6 @@ class TestPanosHttpApi:
         assert "Invalid credential" in str(res.value)
         assert self.plugin.api_key() is None
 
-    def test_login_empty_fail(self):
-        with pytest.raises(AnsibleConnectionFailure) as res:
-            self.plugin.login(None, None)
-
-        assert "Username and password are required" in str(res.value)
-        assert self.plugin.api_key() is None
-
     @pytest.mark.parametrize(
         "response,status,expected",
         [(GOOD_KEYGEN, 200, "foo"), (BAD_KEYGEN, 401, None)],
