@@ -22,7 +22,6 @@ import re
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection, ConnectionError
 
-
 PANOS_API_CODES = {
     "400": "Bad Request",
     "403": "Forbidden",
