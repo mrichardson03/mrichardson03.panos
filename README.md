@@ -10,14 +10,17 @@ Palo Alto Networks Next Generation Firewalls using the PAN-OS API.
 This collection is different than the official Palo Alto Networks collection in
 a number of key ways:
 
-- Written using the Ansible httpapi connector. The `provider` argument to
-  modules is no longer used.
-- Modules interface with the PAN-OS XML API directly, rather than using an
-  intermediate library. This collection only depends on the Python modules
-  `xmltodict` and `requests`, which are included with Ansible Tower by default.
-- **Not backwards compatible.** Option names have been kept the same where
-  appropriate, but this collection differs from **paloaltonetworks.panos** in
-  countless ways (no more `provider` parameter, no `commit` parameter, etc).
+- **Direct XML API support.** All aspects of PAN-OS can be configured using the
+  standard Ansible Jinja2 templating language.
+- **Designed for customization.** Action plugins can further extend the modules
+  in this collection to support complex workflows.
+- **Uses standard Ansible connection methods.** This collection is written using
+  as an Ansible `httpapi` plugin. This allows for a number of enhancements,
+  most notably persistent connections to the device.
+- **No more non-standard dependencies.** Only Python modules shipped in
+  Ansible Tower are used, `xmltodict` and `requests`.
+
+This collection is **not backwards compatible** with `paloaltonetworks.panos`.
 
 ## Installation
 
