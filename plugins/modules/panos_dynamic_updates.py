@@ -73,10 +73,10 @@ changed:
 import xml.etree.ElementTree
 
 from ansible.module_utils.connection import ConnectionError
+from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
-from ansible.utils.display import Display
 
 try:
     import xmltodict
