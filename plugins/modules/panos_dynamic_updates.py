@@ -47,6 +47,10 @@ options:
             - The type of dynamic update to request. Valid options are 'content', 'wildfire' and 'anti-virus'.
         type: str
         default: content
+        choices:
+            - content
+            - anti-virus
+            - wildfire
         required: false
 """
 
@@ -73,7 +77,6 @@ changed:
 import xml.etree.ElementTree
 
 from ansible.module_utils.connection import ConnectionError
-from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
@@ -84,8 +87,6 @@ try:
     HAS_LIB = True
 except ImportError:
     HAS_LIB = False
-
-display = Display()
 
 
 def __execute_op(module, cmd):
@@ -141,7 +142,10 @@ def main():
     module = PanOSAnsibleModule(
         argument_spec=dict(
             content_type=dict(
-                required=True, type="str", choices=("content", "anti-virus", "wildfire")
+                required=False,
+                type="str",
+                choices=("content", "anti-virus", "wildfire"),
+                default="content",
             )
         ),
         supports_check_mode=True,
@@ -156,14 +160,12 @@ def main():
         latest_version = __get_latest_version_for_content_type(module, content_type)
 
         if latest_version is None:
-            display.v("Latest version of {0} is already installed".format(content_type))
             # return here changed = False
             module.exit_json(changed=False)
 
         if module.check_mode:
             module.exit_json(changed=True)
 
-        display.v("Downloading Dynamic Update for type: {0}".format(content_type))
         cmd = (
             "<request>"
             "<{0}><upgrade><download><latest/></download></upgrade></{0}>"
@@ -177,7 +179,6 @@ def main():
 
         module.connection.poll_for_job(job_id)
 
-        display.v("Installing Dynamic Update for type: {0}".format(content_type))
         install_cmd = (
             "<request><{0}><upgrade><install>"
             "<version>latest</version><commit>no</commit>"
