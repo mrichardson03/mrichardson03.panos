@@ -26,21 +26,18 @@ short_description: Checks to see if a PAN-OS device is ready for configuration.
 description:
     - Checks to see if the autocommit job on a PAN-OS device has completed,
       marking the device ready for configuration.
-    - Depending on the model, the device can take a while for the management
-      plane to become responsive and the autocommit job to complete.  It is
-      recommended to either wait in playbooks for an appropriate amount of time,
-      or adjust the Ansible persistent connection timeout using the
-      `ANSIBLE_PERSISTENT_CONNECT_TIMEOUT` env var (or similar setting
-      in `ansible.cfg`) and use the `until`, `retries, and `delay` parameters
-      as in the example.
-    - See the Ansible Network Debug and Troubleshooting Guide for more
-      information.
 author:
     - Michael Richardson (@mrichardson03)
 version_added: '1.0.0'
 notes:
     - Panorama is supported.
     - Check mode is NOT supported.
+    - This module can take a long amount of time to execute.  It is recommended
+      to adjust the Ansible persistent connection timeout to a larger value than
+      the default of 30 seconds.  See the
+      U(Command Timeout,https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html#command-timeout)
+      section in the Ansible Network Debug and Troubleshooting Guide for more
+      information.
 """
 
 EXAMPLES = """
