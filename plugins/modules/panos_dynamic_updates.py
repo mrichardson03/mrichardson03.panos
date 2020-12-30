@@ -25,22 +25,19 @@ module: panos_dynamic_updates
 short_description: Installs dynamic updates of the specified type.
 description:
     - This module will allow the user to install the latest version of the dynamic content type.
-    - Depending on the many factors, the installation of dynamic updates can take
-      to complete. It is recommended to either wait in playbooks for an appropriate amount of time,
-      or adjust the Ansible persistent connection timeout using the
-      `ANSIBLE_PERSISTENT_CONNECT_TIMEOUT` env var (or similar setting
-      in `ansible.cfg`) and use the `timeout` parameter
-      as in the example.
-    - See the Ansible Network Debug and Troubleshooting Guide for more
-      information.
 author:
     - 'Nathan Embery (@nembery)'
 version_added: '1.0.0'
 requirements: []
-
 notes:
     - Checkmode is supported.
     - Panorama is supported.
+    - This module can take a long amount of time to execute.  It is recommended
+      to adjust the Ansible persistent connection timeout to a larger value than
+      the default of 30 seconds.  See the
+      U(Command Timeout,https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html#command-timeout)
+      section in the Ansible Network Debug and Troubleshooting Guide for more
+      information.
 options:
     content_type:
         description:
