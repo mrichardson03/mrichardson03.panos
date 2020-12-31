@@ -20,40 +20,123 @@ from ansible_collections.mrichardson03.panos.plugins.modules import panos_config
 
 from .common.utils import ModuleTestCase
 
+XPATH_ALL = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address"
+
+GET_ALL_EMPTY = """
+<response status="success">
+    <result>
+        <address/>
+    </result>
+</response>
+"""
+
+GET_ALL_TEST_ONE = """
+<response status="success">
+    <result>
+        <address>
+            <entry name="Test-One">
+                <ip-netmask>1.1.1.1</ip-netmask>
+            </entry>
+        </address>
+    </result>
+</response>
+"""
+
+XPATH_TEST_ONE = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address/entry[@name='Test-One']"
+
+GET_TEST_ONE = """
+<response status="success" code="19">
+    <result total-count="1" count="1">
+        <entry name="Test-One" admin="admin" dirtyId="3" time="2020/12/31 11:44:20">
+            <ip-netmask admin="admin" dirtyId="3" time="2020/12/31 11:44:20">1.1.1.1</ip-netmask>
+        </entry>
+    </result>
+</response>
+"""
+
+GET_TEST_ONE_EMPTY = """
+<response status="success" code="7">
+    <result/>
+</response>
+"""
+
+TEST_ONE = """
+<entry name="Test-One">
+    <ip-netmask>1.1.1.1</ip-netmask>
+</entry>
+"""
+
+TEST_ONE_MOD = """
+<entry name="Test-One">
+    <ip-netmask>2.2.2.2</ip-netmask>
+</entry>
+"""
+
+TEST_TWO = """
+<entry name="Test-Two">
+    <ip-netmask>2.2.2.2</ip-netmask>
+</entry>
+"""
+
 
 class TestPanosConfigElement(ModuleTestCase):
     module = panos_config_element
 
-    def test_existing_element(self, connection_mock):
+    def test_create(self, connection_mock):
+        connection_mock.get.return_value = GET_ALL_EMPTY
 
-        element_set = "<some>xml</some>"
+        args = {"xpath": XPATH_ALL, "element": TEST_ONE}
 
-        # get will return xml wrapped in last node in xpath, along with possibly other
-        # items at the same level
-        element_get = (
-            "<response><result><xpath><some>xml</some><other_tag>"
-            "</other_tag></xpath></result></response>"
-        )
-
-        connection_mock.get.return_value = element_get
-
-        result = self._run_module({"xpath": "/some/xpath", "element": element_set})
-
-        assert not result["changed"]
-        assert result["diff"] == {"before": element_get, "after": element_set}
-
-    def test_changed_element(self, connection_mock):
-
-        existing_element = '<entry name="hi">xml</entry>'
-        new_element = '<entry name="hi again">more xml</entry>'
-
-        connection_mock.get.side_effect = [existing_element, new_element]
-
-        connection_mock.set.return_value = (
-            200,
-            '<response status="success" code="20"><result/></response>',
-        )
-
-        result = self._run_module({"xpath": "/some/xpath", "element": new_element})
+        result = self._run_module(args)
 
         assert result["changed"]
+        assert connection_mock.set.call_count == 1
+
+    def test_create_fail(self, connection_mock):
+        connection_mock.get.return_value = GET_ALL_EMPTY
+
+        args = {"xpath": XPATH_ALL}
+
+        result = self._run_module_fail(args)
+
+        assert "'element' is required" in result["msg"]
+
+    def test_create_idempotent(self, connection_mock):
+        connection_mock.get.return_value = GET_ALL_TEST_ONE
+
+        args = {"xpath": XPATH_ALL, "element": TEST_ONE}
+
+        result = self._run_module(args)
+
+        assert not result["changed"]
+        assert connection_mock.set.call_count == 0
+
+    def test_modify(self, connection_mock):
+        connection_mock.get.return_value = GET_TEST_ONE
+
+        args = {"xpath": XPATH_TEST_ONE, "element": TEST_ONE_MOD, "override": True}
+
+        result = self._run_module(args)
+
+        assert result["changed"]
+        assert connection_mock.edit.call_count == 1
+
+    def test_delete(self, connection_mock):
+        connection_mock.get.return_value = GET_TEST_ONE
+
+        args = {"xpath": XPATH_TEST_ONE, "state": "absent"}
+
+        result = self._run_module(args)
+
+        assert result["changed"]
+        assert connection_mock.delete.call_count == 1
+
+    def test_delete_idempotent(self, connection_mock):
+        connection_mock.get.return_value = GET_TEST_ONE_EMPTY
+
+        args = {"xpath": XPATH_TEST_ONE, "state": "absent"}
+
+        result = self._run_module(args)
+
+        assert not result["changed"]
+        assert connection_mock.delete.call_count == 0

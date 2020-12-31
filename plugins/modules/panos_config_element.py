@@ -107,7 +107,7 @@ try:
     import xmltodict
 
     HAS_LIB = True
-except ImportError:
+except ImportError:  # pragma: no cover
     HAS_LIB = False
 
 
@@ -122,7 +122,7 @@ def main():
         with_state=True,
     )
 
-    if not HAS_LIB:
+    if not HAS_LIB:  # pragma: no cover
         module.fail_json(msg="Missing required libraries.")
 
     xpath = module.params["xpath"]
@@ -158,9 +158,8 @@ def main():
 
         # state == "absent"
         else:
-
             # Element exists, delete it.
-            if existing is not {}:
+            if existing is not None:
                 changed = True
 
                 if not module.check_mode:
@@ -174,7 +173,7 @@ def main():
 
         module.exit_json(changed=changed, diff=diff)
 
-    except ConnectionError as e:
+    except ConnectionError as e:  # pragma: no cover
         module.fail_json(msg="{0}".format(e))
 
 
@@ -292,5 +291,5 @@ def __unwrap(dict_object):
         return dict_object[k]
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
