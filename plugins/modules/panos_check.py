@@ -59,12 +59,9 @@ msg:
 import xml.etree.ElementTree
 
 from ansible.module_utils.connection import ConnectionError
-from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
-
-display = Display()
 
 
 def check_autocommit(jobs):
