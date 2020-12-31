@@ -59,9 +59,12 @@ msg:
 import xml.etree.ElementTree
 
 from ansible.module_utils.connection import ConnectionError
+from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
+
+display = Display()
 
 
 def check_autocommit(jobs):
@@ -72,9 +75,12 @@ def check_autocommit(jobs):
         job_type = j.findtext(".//type")
         job_result = j.findtext(".//result")
 
+        if job_type is None or job_result is None:
+            return False
+
         if job_type == "AutoCom" and job_result == "OK":
             return True
-        else:
+        elif job_type == "AutoCom":
             return False
 
     # If we get to this point, the autocommit job is no longer in the job
@@ -94,8 +100,8 @@ def main():
         else:
             module.fail_json(msg="Device not ready.")
     except ConnectionError as e:
-        module.fail_json(msg="{0}".format(e))
+        module.fail_json(msg="{0}".format(e))  # pragma: no cover
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
