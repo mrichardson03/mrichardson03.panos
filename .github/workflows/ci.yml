@@ -42,3 +42,15 @@ jobs:
       - name: ansible-test units
         run:
           make units
+
+  automerge:
+    name: Auto-merge
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-merge pull requests from dependabot (patches only)
+        uses: ridedott/merge-me-action@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_LOGIN: dependabot[bot]
+          PRESET: DEPENDABOT_PATCH
