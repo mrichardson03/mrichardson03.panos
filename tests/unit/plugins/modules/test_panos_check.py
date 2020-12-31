@@ -17,7 +17,6 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import pytest
-
 from ansible_collections.mrichardson03.panos.plugins.modules import panos_check
 
 from .common.utils import ModuleTestCase
