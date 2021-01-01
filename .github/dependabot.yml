@@ -4,8 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    assignees:
+      - "mrichardson03"
       
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
+    assignees:
+      - "mrichardson03"
