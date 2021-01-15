@@ -49,16 +49,7 @@ PANOS_API_CODES = {
 
 
 class PanOSAPIError(ConnectionError):
-    def __init__(self, api_code):
-        self.api_code = api_code
-
-    def __str__(self):
-        if self.api_code not in PANOS_API_CODES.keys():
-            msg = "UNDOCUMENTED API ERROR CODE"
-        else:
-            msg = PANOS_API_CODES[self.api_code]
-
-        return repr("{0}: {1}".format(self.api_code, msg))
+    pass
 
 
 class PanOSAnsibleModule(AnsibleModule):

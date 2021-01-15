@@ -293,12 +293,13 @@ class HttpApi(HttpApiBase):
         """
         pass
 
-    def op(self, cmd, is_xml=False):
+    def op(self, cmd, is_xml=False, validate=True):
         """
         Runs an operational command.
 
         :param cmd: Command to run.
         :param is_xml: Command is in XML format.
+        :param validate: Whether the response should be validated.
         :returns: Tuple containing HTTP code and response data.
 
         Reference:
@@ -313,7 +314,11 @@ class HttpApi(HttpApiBase):
 
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
-        return self._validate_response(code, response)
+
+        if validate:
+            return self._validate_response(code, response)
+        else:
+            return response
 
     # reports
     # export
@@ -321,7 +326,7 @@ class HttpApi(HttpApiBase):
     # log
     # user-id
 
-    def version(self):
+    def version(self, refresh=False):
         """
         Runs the version API command.
 
@@ -329,7 +334,7 @@ class HttpApi(HttpApiBase):
 
         :returns: Dict containing device info.
         """
-        if self._device_info:  # pragma: no cover
+        if self._device_info and refresh is False:  # pragma: no cover
             return self._device_info
 
         params = {"type": "version", "key": self.api_key()}
@@ -479,12 +484,20 @@ class HttpApi(HttpApiBase):
 
         status = root.attrib.get("status")
         api_code = root.attrib.get("code")
+        msg = root.findtext(".//msg/line")
 
         # Successful responses that AREN'T keygen type all have 'success'
         # attributes.
         if status != "success":
-            raise PanOSAPIError(api_code)
+            message = ""
 
-        # For whatever reason, Ansible wants a JSON serializable resposne ONLY,
+            if api_code:
+                message = "{0}: {1}".format(api_code, msg)
+            else:
+                message = "{0}".format(msg)
+
+            raise ConnectionError(message)
+
+        # For whatever reason, Ansible wants a JSON serializable response ONLY,
         # so return unparsed data.
         return data
