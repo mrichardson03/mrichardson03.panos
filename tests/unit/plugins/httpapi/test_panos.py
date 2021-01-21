@@ -8,9 +8,6 @@ from unittest.mock import patch
 import pytest
 from ansible.module_utils.six import BytesIO
 from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAPIError,
-)
 
 GOOD_KEYGEN = """
 <response><result><key>foo</key></result></response>
@@ -112,7 +109,7 @@ class TestPanosHttpApi:
         ],
     )
     def test_validate_response_api_exception(self, http_status, http_response):
-        with pytest.raises(PanOSAPIError):
+        with pytest.raises(ConnectionError):
             self.plugin._validate_response(http_status, http_response)
 
     @staticmethod
