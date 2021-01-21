@@ -23,4 +23,3 @@
     that:
       - result is success
       - result is not changed
-
