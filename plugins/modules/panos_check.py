@@ -56,8 +56,12 @@ EXAMPLES = """
 """
 
 RETURN = """
+elapsed:
+  description: Number of seconds until the device was ready.
+  returned: success
+  type: int
 msg:
-    description: A string specifying if the device is ready for configuration.
-    returned: always
-    type: str
+  description: Status message on success or failure.
+  returned: always
+  type: str
 """

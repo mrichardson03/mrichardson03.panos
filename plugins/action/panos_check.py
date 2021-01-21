@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright 2021 Palo Alto Networks, Inc
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -13,6 +11,10 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Adapted from:
+# https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/action/wait_for_connection.py
+
 
 from __future__ import absolute_import, division, print_function
 
@@ -102,8 +104,8 @@ class ActionModule(ActionBase):
             display.vvv("panos_check: skipping for check_mode")
             return dict(skipped=True)
 
-        result = super(ActionModule, self).run(tmp, task_vars)
-        del tmp
+        result = super().run(tmp, task_vars)
+        del tmp  # tmp is unused
 
         start = datetime.now()
 
