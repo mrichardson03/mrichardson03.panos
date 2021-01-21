@@ -5,6 +5,8 @@
 Ansible collection for automating configuration and operational tasks on
 Palo Alto Networks Next Generation Firewalls using the PAN-OS API.
 
+For more documentation, check the [project wiki](https://github.com/mrichardson03/mrichardson03.panos/wiki).
+
 ## How is this different than paloaltonetworks.panos?
 
 This collection is different than the official Palo Alto Networks collection in
