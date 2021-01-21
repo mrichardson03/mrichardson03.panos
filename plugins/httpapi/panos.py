@@ -45,7 +45,6 @@ from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.plugins.httpapi import HttpApiBase
 from ansible.utils.display import Display
 from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAPIError,
     cmd_xml,
 )
 
