@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2020 Palo Alto Networks, Inc
+# Copyright 2021 Palo Alto Networks, Inc
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -32,21 +32,27 @@ version_added: '1.0.0'
 notes:
     - Panorama is supported.
     - Check mode is NOT supported.
-    - This module can take a long amount of time to execute.  It is recommended
-      to adjust the Ansible persistent connection timeout to a larger value than
-      the default of 30 seconds.  See the
-      U(Command Timeout,https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html#command-timeout)
-      section in the Ansible Network Debug and Troubleshooting Guide for more
-      information.
+options:
+  delay:
+    description:
+      - Number of seconds to wait before starting checks.
+    default: 0
+    type: int
+  sleep:
+    description:
+      - Number of seconds to wait in between checks.
+    default: 60
+    type: int
+  timeout:
+    description:
+      - Maximum number of seconds to poll the PAN-OS device.
+    default: 600
+    type: int
 """
 
 EXAMPLES = """
 - name: Check if the device is ready
   panos_check:
-  register: result
-  until: result is not failed
-  retries: 30
-  delay: 60
 """
 
 RETURN = """
@@ -55,50 +61,3 @@ msg:
     returned: always
     type: str
 """
-
-import xml.etree.ElementTree
-
-from ansible.module_utils.connection import ConnectionError
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAnsibleModule,
-)
-
-
-def check_autocommit(jobs):
-    if len(jobs) == 0:
-        return False
-
-    for j in jobs:
-        job_type = j.findtext(".//type")
-        job_result = j.findtext(".//result")
-
-        if job_type is None or job_result is None:
-            return False
-
-        if job_type == "AutoCom" and job_result == "OK":
-            return True
-        elif job_type == "AutoCom":
-            return False
-
-    # If we get to this point, the autocommit job is no longer in the job
-    # history and it is assumed the device is ready.
-    return True
-
-
-def main():
-    module = PanOSAnsibleModule(argument_spec={}, supports_check_mode=False)
-
-    try:
-        result = module.connection.op("show jobs all")
-        jobs = xml.etree.ElementTree.fromstring(result).findall(".//job")
-
-        if check_autocommit(jobs):
-            module.exit_json(msg="Device ready.")
-        else:
-            module.fail_json(msg="Device not ready.")
-    except ConnectionError as e:
-        module.fail_json(msg="{0}".format(e))  # pragma: no cover
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()
