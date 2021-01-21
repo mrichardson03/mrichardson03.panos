@@ -35,6 +35,8 @@ class ActionModule(ActionBase):
             authcode
         )
 
+        # Catch any exceptions here because things get weird when the management
+        # plane restarts.
         try:
             self._connection.op(cmd, is_xml=True)
         except Exception:
@@ -46,8 +48,8 @@ class ActionModule(ActionBase):
 
         try:
             result = self._connection.op(cmd)
-        except Exception:
-            raise AnsibleError("Error retreiving license info.")
+        except Exception as e:
+            raise AnsibleError("Error retreiving license info.") from e
 
         parsed = xmltodict.parse(result, force_list=("entry,"))
         licenses = parsed.get("response").get("result").get("licenses", None)
