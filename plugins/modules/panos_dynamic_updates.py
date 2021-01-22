@@ -22,39 +22,37 @@ __metaclass__ = type
 DOCUMENTATION = """
 ---
 module: panos_dynamic_updates
-short_description: Installs dynamic updates of the specified type.
+short_description: Installs PAN-OS dynamic updates.
 description:
-    - This module will allow the user to install the latest version of the dynamic content type.
+    - Installs the latest version of one or more PAN-OS dynamic updates.
 author:
     - 'Nathan Embery (@nembery)'
     - 'Michael Richardson (@mrichardson03)'
 version_added: '1.0.0'
 requirements: []
 notes:
-    - Checkmode is supported.
+    - Check mode is supported.
     - Panorama is supported.
 options:
     content_type:
         description:
-            - The type of dynamic update to request. If this value is not
-              specified, the latest version of all licensed dynamic updates will
-              be installed.
-        type: str
-        default: content
+            - The types of dynamic updates to install.
+        type: list
+        elements: str
+        default: ['content']
         choices:
             - content
             - anti-virus
             - wildfire
-        required: false
 """
 
 EXAMPLES = """
-- name: Install all licensed dynamic content
+- name: Install content updates
   panos_dynamic_updates:
 
 - name: Install latest WildFire update
   panos_dynamic_updates:
-    content_type: wildfire
+    content_type: ['wildfire']
 """
 
 RETURN = """

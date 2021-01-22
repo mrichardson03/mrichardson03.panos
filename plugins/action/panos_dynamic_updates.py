@@ -18,7 +18,6 @@ __metaclass__ = type
 
 import xml.etree.ElementTree
 
-import xmltodict
 from ansible.errors import AnsibleError
 from ansible.plugins.action import ActionBase
 from ansible.utils.display import Display
@@ -82,23 +81,6 @@ class ActionModule(ActionBase):
 
         self._connection.submit_and_poll_for_job(install)
 
-    def _fetch_licenses(self):
-        """ Retrieves info on licensees. """
-        cmd = "request license info"
-
-        try:
-            result = self._connection.op(cmd)
-        except Exception as e:
-            raise AnsibleError("Error retreiving license info.") from e
-
-        parsed = xmltodict.parse(result, force_list=("entry,"))
-        licenses = parsed.get("response").get("result").get("licenses", None)
-
-        if licenses is None:
-            return []
-        else:
-            return parsed.get("response").get("result").get("licenses").get("entry", [])
-
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:
             task_vars = dict()
@@ -106,38 +88,27 @@ class ActionModule(ActionBase):
         result = super().run(tmp, task_vars)
         del tmp
 
-        content_type = self._task.args.get("content_type", None)
+        content_types = self._task.args.get("content_type", ["content"])
 
-        if content_type is not None:
+        for content_type in content_types:
             if content_type not in ["content", "anti-virus", "wildfire"]:
                 raise AnsibleError(
                     "'content_type' must be one of 'content', 'anti-virus', 'wildfire'"
                 )
 
+            display.debug("panos_dynamic_updates: checking {0}".format(content_type))
+
             latest_version = self._get_latest_content_version(content_type)
 
             if latest_version is not None:
-                self._download_install_content(content_type)
+                display.debug(
+                    "panos_dynamic_updates: install version {0} of {1}".format(
+                        latest_version, content_type
+                    )
+                )
+                if not self._play_context.check_mode:
+                    self._download_install_content(content_type)
                 result["changed"] = True
                 result[content_type] = latest_version
-
-        else:
-            license_result = self._fetch_licenses()
-            content_types = []
-
-            for lic in license_result:
-                if "Threat" in lic["feature"]:
-                    content_types.append("content")
-                    content_types.append("anti-virus")
-                elif "WildFire" in lic["feature"]:
-                    content_types.append("wildfire")
-
-            for content_type in content_types:
-                latest_version = self._get_latest_content_version(content_type)
-
-                if latest_version is not None:
-                    self._download_install_content(content_type)
-                    result["changed"] = True
-                    result[content_type] = latest_version
 
         return result
