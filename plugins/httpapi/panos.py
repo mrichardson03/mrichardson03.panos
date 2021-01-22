@@ -356,6 +356,21 @@ class HttpApi(HttpApiBase):
 
         return self._device_info
 
+    def submit_and_poll_for_job(self, cmd, interval=5):
+        """
+        Submits a job and then polls for completion.
+
+        :param cmd: Command in XML format.
+        :param interval: Poll interval, in seconds.
+        """
+        op_xml = self.op(cmd, is_xml=True)
+        op_result = xml.etree.ElementTree.fromstring(op_xml)
+
+        job_element = op_result.find(".//job")
+        job_id = job_element.text
+
+        return self.poll_for_job(job_id, interval=interval)
+
     def poll_for_job(self, job_id, interval=5):
         """
         Polls for job completion.
