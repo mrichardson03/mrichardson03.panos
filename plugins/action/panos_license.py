@@ -69,7 +69,7 @@ class ActionModule(ActionBase):
         authcode = self._task.args.get("authcode", None)
 
         if authcode:
-            self._fetch_license(authcode)
+            self._apply_authcode(authcode)
 
             # Activating a VM capacitiy license causes a management plane restart.
             self._execute_module(
