@@ -38,7 +38,7 @@ class ActionModule(ActionBase):
         # Catch any exceptions here because things get weird when the management
         # plane restarts.
         try:
-            self._connection.op(cmd, is_xml=True)
+            self._connection.op(cmd)
         except Exception:
             pass
 
