@@ -290,14 +290,17 @@ class HttpApi(HttpApiBase):
         """
         pass
 
-    def op(self, cmd, is_xml=False, validate=True):
+    def op(self, cmd, is_xml=True, validate=True, poll=False, poll_interval=5):
         """
         Runs an operational command.
 
         :param cmd: Command to run.
         :param is_xml: Command is in XML format.
         :param validate: Whether the response should be validated.
-        :returns: Tuple containing HTTP code and response data.
+        :param poll: If true, look for a job element in the initial response,
+        and poll until that job completes.
+        :param poll_interval:  How often to poll for job completion (in seconds).
+        :returns: Response data.
 
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/run-operational-mode-commands-api.html
@@ -313,7 +316,15 @@ class HttpApi(HttpApiBase):
         code, response = self.send_request(data)
 
         if validate:
-            return self._validate_response(code, response)
+            response = self._validate_response(code, response)
+
+        if poll:
+            op_result = xml.etree.ElementTree.fromstring(response)
+
+            job_element = op_result.find(".//job")
+            job_id = job_element.text
+
+            return self.poll_for_job(job_id, interval=poll_interval)
         else:
             return response
 
@@ -355,21 +366,6 @@ class HttpApi(HttpApiBase):
         display.vvvv("version = {0}".format(self._device_info))
 
         return self._device_info
-
-    def submit_and_poll_for_job(self, cmd, interval=5):
-        """
-        Submits a job and then polls for completion.
-
-        :param cmd: Command in XML format.
-        :param interval: Poll interval, in seconds.
-        """
-        op_xml = self.op(cmd, is_xml=True)
-        op_result = xml.etree.ElementTree.fromstring(op_xml)
-
-        job_element = op_result.find(".//job")
-        job_id = job_element.text
-
-        return self.poll_for_job(job_id, interval=interval)
 
     def poll_for_job(self, job_id, interval=5):
         """

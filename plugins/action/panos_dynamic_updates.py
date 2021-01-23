@@ -38,7 +38,7 @@ class ActionModule(ActionBase):
         cmd = "<request><{0}><upgrade><check/></upgrade></{0}></request>".format(
             content_type
         )
-        op_xml = self._connection.op(cmd=cmd, is_xml=True)
+        op_xml = self._connection.op(cmd=cmd)
         op_doc = xml.etree.ElementTree.fromstring(op_xml)
 
         for entry in op_doc.findall(".//entry"):
@@ -71,7 +71,7 @@ class ActionModule(ActionBase):
             "</request>".format(content_type)
         )
 
-        self._connection.submit_and_poll_for_job(download)
+        self._connection.op(download, poll=True)
 
         install = (
             "<request><{0}><upgrade><install>"
@@ -79,7 +79,7 @@ class ActionModule(ActionBase):
             "</install></upgrade></{0}></request>".format(content_type)
         )
 
-        self._connection.submit_and_poll_for_job(install)
+        self._connection.op(install, poll=True)
 
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:

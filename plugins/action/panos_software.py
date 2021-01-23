@@ -85,7 +85,7 @@ class ActionModule(ActionBase):
         )
 
         cmd = "<request><system><software><check></check></software></system></request>"
-        self._connection.op(cmd, is_xml=True)
+        self._connection.op(cmd)
 
         if download and (
             (current.major != target.major) or (current.minor != target.minor)
@@ -101,7 +101,7 @@ class ActionModule(ActionBase):
                 )
             )
 
-            self._connection.submit_and_poll_for_job(cmd, interval=10)
+            self._connection.op(cmd, poll=True, poll_interval=10)
 
         if download:
             display.debug("panos_software: download target version: {0}".format(target))
@@ -114,7 +114,7 @@ class ActionModule(ActionBase):
                 )
             )
 
-            self._connection.submit_and_poll_for_job(cmd, interval=10)
+            self._connection.op(cmd, poll=True, poll_interval=10)
 
         if install:
             display.debug("panos_software: install target version: {0}".format(target))
@@ -124,7 +124,7 @@ class ActionModule(ActionBase):
                 "</install></software></system></request>".format(target)
             )
 
-            self._connection.submit_and_poll_for_job(cmd, interval=10)
+            self._connection.op(cmd, poll=True, poll_interval=10)
 
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:
