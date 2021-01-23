@@ -69,7 +69,7 @@ class ActionModule(ActionBase):
 
         while datetime.utcnow() < max_end_time:
             try:
-                result = self._connection.op("show jobs all")
+                result = self._connection.op("show jobs all", is_xml=False)
                 jobs = xml.etree.ElementTree.fromstring(result).findall(".//job")
                 display.debug(jobs)
                 if check_autocommit(jobs):
