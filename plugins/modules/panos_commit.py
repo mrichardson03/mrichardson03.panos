@@ -96,7 +96,7 @@ def main():
     )
 
     try:
-        changes = parse_xml(module.connection.op("check pending-changes"))
+        changes = parse_xml(module.connection.op("check pending-changes", is_xml=False))
         result = changes.find("./result").text
 
         if result == "no":
