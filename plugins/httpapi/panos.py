@@ -297,8 +297,8 @@ class HttpApi(HttpApiBase):
         :param cmd: Command to run.
         :param is_xml: Command is in XML format.
         :param validate: Whether the response should be validated.
-        :param poll: If true, look for a job element in the initial response,
-        and poll until that job completes.
+        :param poll: For use with a long running task.  When set to true, poll
+        until that task completes.
         :param poll_interval:  How often to poll for job completion (in seconds).
         :returns: Response data.
 
