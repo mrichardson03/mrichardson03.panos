@@ -17,8 +17,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import time
+
 import xmltodict
 from ansible.errors import AnsibleError
+from ansible.module_utils._text import to_text
 from ansible.plugins.action import ActionBase
 from ansible.utils.display import Display
 
@@ -38,16 +41,21 @@ class ActionModule(ActionBase):
         # Catch any exceptions here because things get weird when the management
         # plane restarts.
         try:
-            self._connection.op(cmd)
+            result = self._connection.op(cmd, validate=False)
         except Exception:
             pass
+        finally:
+            if "already provisioned" not in to_text(result):
+                return True
+            else:
+                return False
 
     def _fetch_licenses(self):
         """ Retrieves info on licensees. """
         cmd = "request license info"
 
         try:
-            result = self._connection.op(cmd)
+            result = self._connection.op(cmd, is_xml=False)
         except Exception as e:
             raise AnsibleError("Error retreiving license info.") from e
 
@@ -69,14 +77,17 @@ class ActionModule(ActionBase):
         authcode = self._task.args.get("authcode", None)
 
         if authcode:
-            self._apply_authcode(authcode)
+            if self._apply_authcode(authcode):
+                # Activating a VM license causes a management plane restart.
+                # Sleep for a completely unscientific amount of time,
+                # then see if the autocommit has succeeded.
+                time.sleep(600)
 
-            # Activating a VM capacitiy license causes a management plane restart.
-            self._execute_module(
-                module_name="mrichardson03.panos.panos_check", task_vars=task_vars
-            )
+                self._execute_module(
+                    module_name="mrichardson03.panos.panos_check", task_vars=task_vars
+                )
 
-            result["changed"] = True
+                result["changed"] = True
 
         version = self._connection.version(refresh=True)
 
