@@ -44,11 +44,11 @@ class ActionModule(ActionBase):
             result = self._connection.op(cmd, validate=False)
         except Exception:
             pass
-        finally:
-            if "already provisioned" not in to_text(result):
-                return True
-            else:
-                return False
+
+        if "already provisioned" not in to_text(result):
+            return True
+        else:
+            return False
 
     def _fetch_licenses(self):
         """ Retrieves info on licensees. """
