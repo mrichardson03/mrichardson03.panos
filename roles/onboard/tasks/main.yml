@@ -1,0 +1,47 @@
+---
+- name: Configure DNS servers
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting
+    element: |
+      <servers>
+        <primary>{{ dns_primary }}</primary>
+        {% if dns_secondary is defined %}
+        <secondary>{{ dns_secondary }}</secondary>
+        {% endif %}
+      </servers>
+  when: dns_primary is defined
+  register: dns
+
+- name: Commit changes
+  panos_commit:
+  when: dns is changed
+
+- name: License firewall
+  panos_license:
+    authcode: '{{ authcode }}'
+  when: authcode is defined
+
+- name: Install latest content version
+  panos_dynamic_updates:
+  when: install_content
+
+- name: Set licensing API key
+  panos_op:
+    cmd: "<request><license><api-key><set><key>{{ licensing_api_key }}</key></set></api-key></license></request>"
+    cmd_is_xml: True
+  register: lic_key
+  when: licensing_api_key is defined
+  failed_when:
+    - lic_key is failed
+    - "'same as old' not in lic_key.msg"
+
+- name: Upgrade PAN-OS version
+  panos_software:
+    version: '{{ version }}'
+    restart: True
+  register: upgrade
+  when: version is defined
+
+- name: Wait until ready
+  panos_check:
+  when: upgrade is changed
