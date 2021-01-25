@@ -46,21 +46,67 @@ ansible-galaxy collection install paloaltonetworks.panos_enhanced
 
 ### Sample Playbook
 
-```
+```yaml
 ---
-- hosts: fw
+- hosts: firewall
 
   collections:
     - paloaltonetworks.panos_enhanced
 
-  tasks:
-    - name: Get system info
-      panos_op:
-        cmd: 'show system info'
-      register: res
+  vars:
+    address_objects:
+      - name: "web-srv"
+        value: "192.168.45.5"
+      - name: "db-srv"
+        value: "192.168.35.5"
+        type: "ip-netmask"
+        description: "database server"
+      - name: "fqdn-test"
+        type: "fqdn"
+        value: "foo.bar.baz"
 
-    - debug:
-        msg: '{{ res.stdout }}'
+  tasks:
+    - name: Create any configuration you want!
+      panos_config_element:
+        xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability"
+        element: |
+          <entry name="Outbound-Vuln-Profile">
+            <rules>
+              <entry name="Block-Critical-High-Medium">
+                <action>
+                  <reset-both/>
+                </action>
+                <vendor-id>
+                  <member>any</member>
+                </vendor-id>
+                <severity>
+                  <member>critical</member>
+                  <member>high</member>
+                  <member>medium</member>
+                </severity>
+                <cve>
+                  <member>any</member>
+                </cve>
+                <threat-name>any</threat-name>
+                <host>any</host>
+                <category>any</category>
+                <packet-capture>single-packet</packet-capture>
+              </entry>
+            </rules>
+          </entry>
+
+    - name: Create multiple objects at once, and use Jinja!
+      panos_config_element:
+        xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address"
+        element: |
+          {% for object in address_objects %}
+            <entry name="{{ object.name }}">
+              <{{ object.type | default("ip-netmask") }}>{{ object.value }}</{{ object.type | default("ip-netmask") }}>
+          {% if 'description' in object %}
+              <description>{{ object.description }}</description>
+          {% endif %}
+            </entry>
+          {% endfor %}
 ```
 
 Either refer to modules by their fully qualified collection name (FQCN), or use
