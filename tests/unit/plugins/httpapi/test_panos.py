@@ -7,7 +7,9 @@ from unittest.mock import patch
 
 import pytest
 from ansible.module_utils.six import BytesIO
-from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
+from ansible_collections.paloaltonetworks.panos_enhanced.plugins.httpapi.panos import (
+    HttpApi,
+)
 
 GOOD_KEYGEN = """
 <response><result><key>foo</key></result></response>

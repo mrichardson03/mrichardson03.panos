@@ -13,12 +13,12 @@ jobs:
   
     defaults:
       run:
-        working-directory: ./ansible_collections/mrichardson03/panos
+        working-directory: ./ansible_collections/paloaltonetworks/panos_enhanced
 
     steps:
       - uses: actions/checkout@v2
         with:
-          path: ./ansible_collections/mrichardson03/panos
+          path: ./ansible_collections/paloaltonetworks/panos_enhanced
 
       - name: Set up Python
         uses: actions/setup-python@v2.2.1

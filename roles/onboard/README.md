@@ -61,7 +61,7 @@ None.
         version: 10.0.2
 
       roles:
-         - role: mrichardson03.panos.onboard
+         - role: paloaltonetworks.panos_enhanced.onboard
 
 ## License
 

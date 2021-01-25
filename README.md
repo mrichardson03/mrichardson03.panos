@@ -1,11 +1,11 @@
-# PAN-OS Ansible Collection - mrichardson03.panos
+# PAN-OS Ansible Collection - paloaltonetworks.panos_enhanced
 
-![CI/CD](https://github.com/mrichardson03/mrichardson03.panos/workflows/CI/CD/badge.svg)
+![CI/CD](https://github.com/PaloAltoNetworks/panos_enhanced/workflows/CI/CD/badge.svg)
 
 Ansible collection for automating configuration and operational tasks on
 Palo Alto Networks Next Generation Firewalls using the PAN-OS API.
 
-For more documentation, check the [project wiki](https://github.com/mrichardson03/mrichardson03.panos/wiki).
+For more documentation, check the [project wiki](https://github.com/PaloAltoNetworks/panos_enhanced/wiki).
 
 ## How is this different than paloaltonetworks.panos?
 
@@ -29,7 +29,7 @@ This collection is **not backwards compatible** with `paloaltonetworks.panos`.
 Install this collection using the Ansible Galaxy CLI:
 
 ```
-ansible-galaxy collection install mrichardson03.panos
+ansible-galaxy collection install paloaltonetworks.panos_enhanced
 ```
 
 ## Usage
@@ -41,7 +41,7 @@ ansible-galaxy collection install mrichardson03.panos
 - hosts: fw
 
   collections:
-    - mrichardson03.panos
+    - paloaltonetworks.panos_enhanced
 
   tasks:
     - name: Get system info
@@ -67,7 +67,7 @@ fw        ansible_host=192.168.55.10
 ansible_user=admin
 ansible_password=P4loalto!
 
-ansible_network_os=mrichardson03.panos.panos
+ansible_network_os=paloaltonetworks.panos_enhanced.panos
 ansible_connection=httpapi
 ansible_httpapi_use_ssl=True
 ansible_httpapi_validate_certs=False
@@ -81,7 +81,8 @@ Authentication via API key is also supported using the variable
 ## Python Compatability
 
 This collection is written for Python 3.6.8, which is the version used in the
-default Ansible Tower/AWX virtual environment.
+default Ansible Tower/AWX virtual environment. Newer versions of Python will
+likely work, but are not tested.
 
 ## Support
 
