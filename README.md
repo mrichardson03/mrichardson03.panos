@@ -24,6 +24,16 @@ a number of key ways:
 
 This collection is **not backwards compatible** with `paloaltonetworks.panos`.
 
+## Included Roles
+
+Ansible roles for common tasks are also included:
+
+- [onboard](https://github.com/PaloAltoNetworks/panos_enhanced/tree/develop/roles/onboard):
+  Performs common initial configuration steps: licensing, install latest content,
+  upgrade to a new PAN-OS version.
+- [ironskillet](https://github.com/PaloAltoNetworks/panos_enhanced/tree/develop/roles/ironskillet):
+  Installs a best practices initial configuration.
+
 ## Installation
 
 Install this collection using the Ansible Galaxy CLI:
