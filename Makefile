@@ -1,16 +1,17 @@
 # Taken from: https://github.com/sensu/sensu-go-ansible/blob/master/Makefile
 
-# Make sure we have ansible_collections/mrichardson03/panos as a prefix. This is
-# ugly as heck, but it works. I suggest all future developer to treat next few
-# lines as an opportunity to learn a thing or two about GNU make ;)
+# Make sure we have ansible_collections/paloaltonetworks/panos_enhanced
+# as a prefix. This is ugly as heck, but it works. I suggest all future
+# developer to treat next few lines as an opportunity to learn a thing or two
+# about GNU make ;)
 collection := $(notdir $(realpath $(CURDIR)      ))
 namespace  := $(notdir $(realpath $(CURDIR)/..   ))
 toplevel   := $(notdir $(realpath $(CURDIR)/../..))
 
-err_msg := Place collection at <WHATEVER>/ansible_collections/mrichardson/panos
-ifneq (panos,$(collection))
+err_msg := Place collection at <WHATEVER>/ansible_collections/paloaltonetworks/panos_enhanced
+ifneq (panos_enhanced,$(collection))
   $(error $(err_msg))
-else ifneq (mrichardson03,$(namespace))
+else ifneq (paloaltonetworks,$(namespace))
   $(error $(err_msg))
 else ifneq (ansible_collections,$(toplevel))
   $(error $(err_msg))

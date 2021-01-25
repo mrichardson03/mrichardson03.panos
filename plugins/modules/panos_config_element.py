@@ -35,7 +35,7 @@ notes:
     - Checkmode is supported.
     - Panorama is supported.
 extends_documentation_fragment:
-    - mrichardson03.panos.fragments.state
+    - paloaltonetworks.panos_enhanced.fragments.state
 options:
     xpath:
         description:
@@ -99,7 +99,7 @@ diff:
 """
 
 from ansible.module_utils.connection import ConnectionError
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+from ansible_collections.paloaltonetworks.panos_enhanced.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
 

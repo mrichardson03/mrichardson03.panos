@@ -81,7 +81,7 @@ None.
     - hosts: firewalls
 
       roles:
-         - mrichardson03.panos.ironskillet
+         - paloaltonetworks.panos_enhanced.ironskillet
 
 ## License
 

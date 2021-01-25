@@ -51,7 +51,7 @@ api_key:
 """
 
 from ansible.module_utils.connection import ConnectionError
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+from ansible_collections.paloaltonetworks.panos_enhanced.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
 
