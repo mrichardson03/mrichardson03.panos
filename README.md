@@ -109,8 +109,30 @@ ansible-galaxy collection install paloaltonetworks.panos_enhanced
           {% endfor %}
 ```
 
-Either refer to modules by their fully qualified collection name (FQCN), or use
-the `collection` specification in your playbooks.
+### Customization through Action Plugins
+
+Don't care for XML in your playbooks? Use an
+[action plugin](https://github.com/PaloAltoNetworks/panos_enhanced/blob/develop/plugins/action/panos_address_object.py)
+to turn this:
+
+```yaml
+- name: Create address object
+  panos_config_element:
+    xpath: "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address"
+    element: |
+      <entry name="web-srv">
+        <ip-netmask>192.168.45.5</ip-netmask>
+      </entry>
+```
+
+into this:
+
+```yaml
+- name: Create address object
+  panos_address_object:
+    name: "web-srv"
+    value: "192.168.45.5"
+```
 
 ### Sample Inventory
 
