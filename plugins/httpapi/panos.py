@@ -50,6 +50,31 @@ from ansible_collections.paloaltonetworks.panos_enhanced.plugins.module_utils.pa
 
 display = Display()
 
+PANOS_API_CODES = {
+    "400": "Bad Request",
+    "403": "Forbidden",
+    "1": "Unknown Command",
+    "2": "Internal Error",
+    "3": "Internal Error",
+    "4": "Internal Error",
+    "5": "Internal Error",
+    "6": "Bad Xpath",
+    "7": "Object not present",
+    "8": "Object not unique",
+    "10": "Reference count not zero",
+    "11": "Internal Error",
+    "12": "Invalid Object",
+    "14": "Operation Not Possible",
+    "15": "Operation Denied",
+    "16": "Unauthorized",
+    "17": "Invalid Command",
+    "18": "Malformed Command",
+    "19": "Success",
+    "20": "Success",
+    "21": "Internal Error",
+    "22": "Session Timed Out",
+}
+
 
 class HttpApi(HttpApiBase):
     def __init__(self, connection):
@@ -266,12 +291,14 @@ class HttpApi(HttpApiBase):
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/commit-configuration-api/commit.html
         """
-        cmd = "commit"
+        cmd = "<commit>"
 
         if description:
-            cmd += " description '{0}'".format(description)
+            cmd += "<description>{0}</description>".format(description)
 
-        params = {"type": "commit", "key": self.api_key(), "cmd": cmd_xml(cmd)}
+        cmd += "</commit>"
+
+        params = {"type": "commit", "key": self.api_key(), "cmd": cmd}
 
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
@@ -389,7 +416,7 @@ class HttpApi(HttpApiBase):
             status = root.find("./result/job/status")
 
             if status is None:
-                raise AnsibleConnectionFailure("Could not find status element in job.")
+                raise ConnectionError("Could not find status element in job.")
 
             display.vvvv(
                 "poll_for_job(): job_id {0} status = {1}".format(job_id, status.text)
@@ -501,8 +528,10 @@ class HttpApi(HttpApiBase):
         if status != "success":
             message = ""
 
-            if api_code:
-                message = "{0}: {1}".format(api_code, msg)
+            if api_code and api_code in PANOS_API_CODES:
+                message = "{0} ({1}): {2}".format(
+                    api_code, PANOS_API_CODES[api_code], msg
+                )
             else:
                 message = "{0}".format(msg)
 
