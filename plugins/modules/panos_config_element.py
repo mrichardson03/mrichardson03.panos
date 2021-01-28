@@ -46,9 +46,9 @@ options:
         description:
             - The element, in XML format.
         type: str
-    override:
+    edit:
         description:
-            - If **true**, override any existing configuration at the specified
+            - If **true**, replace any existing configuration at the specified
               location with the contents of *element*.
             - If **false**, merge the contents of *element* with any existing
               configuration at the specified location.
@@ -98,17 +98,93 @@ diff:
     elements: str
 """
 
+import xml.etree.ElementTree
+
 from ansible.module_utils.connection import ConnectionError
 from ansible_collections.paloaltonetworks.panos_enhanced.plugins.module_utils.panos import (
     PanOSAnsibleModule,
 )
 
-try:
-    import xmltodict
 
-    HAS_LIB = True
-except ImportError:  # pragma: no cover
-    HAS_LIB = False
+def xml_compare(one, two, excludes=None):
+    """
+    Compares the contents of two xml.etree.ElementTrees for equality.
+
+    :param one: First ElementTree.
+    :param two: Second ElementTree.
+    :param excludes: List of tag attributes to disregard.
+    """
+    if excludes is None:
+        excludes = ["admin", "dirtyId", "time"]
+
+    if one is None or two is None:
+        return False
+
+    if one.tag != two.tag:
+        # Tag does not match.
+        return False
+
+    for name, value in one.attrib.items():
+        if name not in excludes:
+            if two.attrib.get(name) != value:
+                # Attributes do not match.
+                return False
+
+    if not text_compare(one.text, two.text):
+        # Text differs at this node.
+        return False
+
+    # Sort children by tag name to make sure they're compared in order.
+    children_one = sorted(one, key=lambda e: e.tag)
+    children_two = sorted(two, key=lambda e: e.tag)
+
+    if len(children_one) != len(children_two):
+        # Number of children differs.
+        return False
+
+    for child_one, child_two in zip(children_one, children_two):
+        if not xml_compare(child_one, child_two, excludes):
+            # Child documents do not match.
+            return False
+
+    return True
+
+
+def text_compare(one, two):
+    """ Compares the contents of two XML text attributes. """
+    if not one and not two:
+        return True
+    return (one or "").strip() == (two or "").strip()
+
+
+def snippets_contained(big, small):
+    """
+    Check to see if all the XML snippets contained in "small" are present in
+    "big".
+
+    :param big: Big document ElementTree.
+    :param small: Small document ElementTree.
+    """
+    results = {}
+
+    snippets = list(small)
+
+    # If small doesn't have any children, it's only a single element.
+    if not snippets:
+        snippets.append(small)
+
+    for snippet in snippets:
+        for child in big:
+            if xml_compare(child, snippet):
+                results.update({snippet.tag: True})
+                break
+
+    # Check to see if all snippets in "small" were found in "big".
+    for snippet in snippets:
+        if snippet.tag not in results:
+            return False
+
+    return True
 
 
 def main():
@@ -116,45 +192,59 @@ def main():
         argument_spec=dict(
             xpath=dict(required=True),
             element=dict(required=False),
-            override=dict(type="bool", default=False, required=False),
+            edit=dict(type="bool", default=False, required=False),
         ),
         supports_check_mode=True,
         with_state=True,
     )
 
-    if not HAS_LIB:  # pragma: no cover
-        module.fail_json(msg="Missing required libraries.")
-
     xpath = module.params["xpath"]
-    element = module.params["element"]
-    override = module.params["override"]
+    element_xml = module.params["element"]
+    edit = module.params["edit"]
     state = module.params["state"]
 
     try:
-        existing_response = module.connection.get(xpath)
-        existing_object = xmltodict.parse(existing_response)
-
-        existing = existing_object.get("response", {}).get("result", {})
+        existing_xml = module.connection.get(xpath)
+        existing = xml.etree.ElementTree.fromstring(existing_xml).find("./result/")
 
         changed = False
         diff = {}
 
         if state == "present":
-            if element is None:
+            if element_xml is None:
                 module.fail_json(msg="'element' is required when state is 'present'.")
 
-            # Element does not exist as desired, create/edit it.
-            if not __is_present(existing, element):
-                changed = True
+            if edit:
+                element = xml.etree.ElementTree.fromstring(element_xml)
 
-                if not module.check_mode:
-                    if override:
-                        module.connection.edit(xpath, element)
-                    else:
-                        module.connection.set(xpath, element)
+                # Edit action is a regular comparison between the two
+                # XML documents for equality.
+                if not xml_compare(existing, element):
+                    changed = True
 
-            # Element exists as desired.
-            diff = {"before": existing_response, "after": element}
+                    if not module.check_mode:
+                        module.connection.edit(xpath, element_xml)
+
+            else:
+                # When using set action, element can be an invalid XML document.
+                # Wrap it in a dummy tag if so.
+                try:
+                    element = xml.etree.ElementTree.fromstring(element_xml)
+                except xml.etree.ElementTree.ParseError:
+                    element = xml.etree.ElementTree.fromstring(
+                        "<wrapped>" + element_xml + "</wrapped>"
+                    )
+
+                if not snippets_contained(existing, element):
+                    changed = True
+
+                    if not module.check_mode:
+                        module.connection.set(xpath, element_xml)
+
+            diff = {
+                "before": existing_xml,
+                "after": element_xml,
+            }
 
         # state == "absent"
         else:
@@ -165,7 +255,7 @@ def main():
                 if not module.check_mode:
                     module.connection.delete(xpath)
 
-                diff = {"before": existing_response, "after": ""}
+                diff = {"before": existing_xml, "after": ""}
 
             # Element doesn't exist, nothing needs to be done.
             else:
@@ -175,120 +265,6 @@ def main():
 
     except ConnectionError as e:  # pragma: no cover
         module.fail_json(msg="{0}".format(e))
-
-
-def __is_present(existing, snippet_string):
-    """
-    Simple function to check if a snippet is present in the object as returned
-    from the XML API.
-
-    :param existing: object as returned from the module.connection.get method
-    :param snippet_string: snippet string we want to add
-    :return: boolean True if found to be present
-    """
-
-    # snippets must not include the surrounding tag info, which means they are
-    # not valid XML by themselves
-    wrapped_snippet = "<wrapped>" + snippet_string + "</wrapped>"
-
-    # if existing object does not exist, then it can't be present
-    if not existing:
-        return False
-
-    try:
-        snippet = xmltodict.parse(wrapped_snippet)
-    except ValueError:
-        return False
-
-    return __is_subset(__unwrap(snippet), __unwrap(existing))
-
-
-def __is_subset(small, large):
-    """
-    Compare two items to determine if the 'small' item is contained in the
-    'large' item.
-
-    Based on answer found here:
-    https://stackoverflow.com/questions/44120874/find-if-a-dict-is-contained-in-another-new-version
-
-    :param small: dict, list or str
-    :param large: larger dict, list, or str
-    :return: true if all items from small are found in large
-    """
-    if isinstance(small, dict) and isinstance(large, dict):
-        for key in small.keys():
-            # don't mind extra items added to the candidate config
-            # in the normal case, element coming from user will not have these
-            # attributes. Can possibly skip this check.
-            if key in ["@dirtyId", "@admin", "@time"]:
-                continue
-
-            if key not in large:
-                return False
-
-            elif not __is_subset(small[key], large[key]):
-                return False
-
-        return True
-
-    elif isinstance(small, dict) and isinstance(large, list):
-
-        if not any(__is_subset(small, l_item) for l_item in large):
-            return False
-
-        return True
-
-    elif isinstance(small, list) and isinstance(large, list):
-        for s_item in small:
-
-            if not any(__is_subset(s_item, l_item) for l_item in large):
-                return False
-
-        return True
-
-    elif isinstance(small, str):
-        if isinstance(large, str):
-            return small == large
-        elif isinstance(large, dict):
-            # The candidate config can do fun things like set an attribute
-            # called #text in a dict instead of creating an actual str value
-            if "#text" in large:
-                return small == large["#text"]
-
-        return False
-
-    elif small is None and isinstance(large, dict):
-        # handle cases where we have a bare tag in the candidate config
-        # then candidate will only contain the metadata attributes
-        # todo: is there a better way to do this?
-        if list(large.keys()).sort() == ["@dirtyId", "@admin", "@time"].sort():
-            return True
-
-    # failsafe
-    return False
-
-
-def __unwrap(dict_object):
-    """
-    Simple function to return the first item found in a given dictionary that
-    does not start with an '@'.
-
-    This is used as xmltodict will return an object with several attributes
-    attached such as @count, @total-count etc. The return from
-    module.connection.get will also 'wrap' the returned items in an extra
-    attribute as well.
-
-    This roughly correlates to the last node in the xpath.
-
-    :param dict_object:
-    :return:
-    """
-
-    for k in dict_object.keys():
-        if str(k).startswith("@"):
-            continue
-
-        return dict_object[k]
 
 
 if __name__ == "__main__":  # pragma: no cover

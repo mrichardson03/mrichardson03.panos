@@ -24,41 +24,21 @@ from .common.utils import ModuleTestCase
 
 XPATH_ALL = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address"
 
-GET_ALL_EMPTY = """
-<response status="success">
-    <result>
-        <address/>
-    </result>
-</response>
-"""
-
-GET_ALL_TEST_ONE = """
-<response status="success">
-    <result>
-        <address>
-            <entry name="Test-One">
-                <ip-netmask>1.1.1.1</ip-netmask>
-            </entry>
-        </address>
-    </result>
-</response>
-"""
-
 XPATH_TEST_ONE = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address/entry[@name='Test-One']"
 
-GET_TEST_ONE = """
-<response status="success" code="19">
-    <result total-count="1" count="1">
-        <entry name="Test-One" admin="admin" dirtyId="3" time="2020/12/31 11:44:20">
-            <ip-netmask admin="admin" dirtyId="3" time="2020/12/31 11:44:20">1.1.1.1</ip-netmask>
-        </entry>
-    </result>
+GET_ADDRESS_EMPTY = """
+<response status="success" code="7">
+    <result/>
 </response>
 """
 
-GET_TEST_ONE_EMPTY = """
-<response status="success" code="7">
-    <result/>
+GET_ADDRESS_TEST_ONE = """
+<response status="success" code="19">
+    <result total-count="1" count="1">
+        <entry name="Test-One">
+            <ip-netmask>1.1.1.1</ip-netmask>
+        </entry>
+    </result>
 </response>
 """
 
@@ -74,10 +54,157 @@ TEST_ONE_MOD = """
 </entry>
 """
 
-TEST_TWO = """
-<entry name="Test-Two">
-    <ip-netmask>2.2.2.2</ip-netmask>
-</entry>
+XPATH_SYSTEM = (
+    "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system"
+)
+
+GET_EMPTY_SYSTEM = """
+<response status="success" code="19">
+    <result total-count="1" count="1">
+        <system>
+            <type>
+                <static/>
+            </type>
+        </system>
+    </result>
+</response>
+"""
+
+SIMPLE_SET = """
+<login-banner>You have accessed a protected system.
+Log off immediately if you are not an authorized user.</login-banner>
+"""
+
+COMPLEX_SET = """
+<update-schedule>
+    <statistics-service>
+        <application-reports>yes</application-reports>
+        <threat-prevention-reports>yes</threat-prevention-reports>
+        <threat-prevention-pcap>yes</threat-prevention-pcap>
+        <threat-prevention-information>yes</threat-prevention-information>
+        <passive-dns-monitoring>yes</passive-dns-monitoring>
+        <url-reports>yes</url-reports>
+        <health-performance-reports>yes</health-performance-reports>
+        <file-identification-reports>yes</file-identification-reports>
+    </statistics-service>
+    <threats>
+        <recurring>
+        <every-30-mins>
+            <at>2</at>
+            <action>download-and-install</action>
+        </every-30-mins>
+        <threshold>48</threshold>
+        </recurring>
+    </threats>
+    <anti-virus>
+        <recurring>
+        <hourly>
+            <at>4</at>
+            <action>download-and-install</action>
+        </hourly>
+        </recurring>
+    </anti-virus>
+    <wildfire>
+        <recurring>
+        <every-min>
+            <action>download-and-install</action>
+        </every-min>
+        </recurring>
+    </wildfire>
+</update-schedule>
+<snmp-setting>
+    <access-setting>
+        <version>
+            <v3/>
+        </version>
+    </access-setting>
+</snmp-setting>
+<dns-setting>
+    <servers>
+        <primary>8.8.8.8</primary>
+        <secondary>8.8.4.4</secondary>
+    </servers>
+</dns-setting>
+<ntp-servers>
+    <primary-ntp-server>
+        <ntp-server-address>0.pool.ntp.org</ntp-server-address>
+    </primary-ntp-server>
+    <secondary-ntp-server>
+        <ntp-server-address>1.pool.ntp.org</ntp-server-address>
+    </secondary-ntp-server>
+</ntp-servers>
+<login-banner>You have accessed a protected system.
+Log off immediately if you are not an authorized user.</login-banner>
+<timezone>UTC</timezone>
+"""
+
+GET_SYSTEM = """
+<response status="success" code="19">
+    <result total-count="1" count="1">
+        <system>
+            <update-schedule>
+                <statistics-service>
+                <application-reports>yes</application-reports>
+                <threat-prevention-reports>yes</threat-prevention-reports>
+                <threat-prevention-pcap>yes</threat-prevention-pcap>
+                <threat-prevention-information>yes</threat-prevention-information>
+                <passive-dns-monitoring>yes</passive-dns-monitoring>
+                <url-reports>yes</url-reports>
+                <health-performance-reports>yes</health-performance-reports>
+                <file-identification-reports>yes</file-identification-reports>
+                </statistics-service>
+                <threats>
+                <recurring>
+                    <every-30-mins>
+                    <at>2</at>
+                    <action>download-and-install</action>
+                    </every-30-mins>
+                    <threshold>48</threshold>
+                </recurring>
+                </threats>
+                <anti-virus>
+                <recurring>
+                    <hourly>
+                    <at>4</at>
+                    <action>download-and-install</action>
+                    </hourly>
+                </recurring>
+                </anti-virus>
+                <wildfire>
+                <recurring>
+                    <every-min>
+                    <action>download-and-install</action>
+                    </every-min>
+                </recurring>
+                </wildfire>
+            </update-schedule>
+            <snmp-setting>
+                <access-setting>
+                <version>
+                    <v3/>
+                </version>
+                </access-setting>
+            </snmp-setting>
+            <dns-setting>
+                <servers>
+                <primary>8.8.8.8</primary>
+                <secondary>8.8.4.4</secondary>
+                </servers>
+            </dns-setting>
+            <ntp-servers>
+                <primary-ntp-server>
+                <ntp-server-address>0.pool.ntp.org</ntp-server-address>
+                </primary-ntp-server>
+                <secondary-ntp-server>
+                <ntp-server-address>1.pool.ntp.org</ntp-server-address>
+                </secondary-ntp-server>
+            </ntp-servers>
+            <login-banner>You have accessed a protected system.
+Log off immediately if you are not an authorized user.</login-banner>
+            <timezone>UTC</timezone>
+        </system>
+    </result>
+</response>
 """
 
 
@@ -85,28 +212,28 @@ class TestPanosConfigElement(ModuleTestCase):
     module = panos_config_element
 
     def test_create(self, connection_mock):
-        connection_mock.get.return_value = GET_ALL_EMPTY
+        connection_mock.get.return_value = GET_ADDRESS_EMPTY
 
-        args = {"xpath": XPATH_ALL, "element": TEST_ONE}
+        args = {"xpath": XPATH_TEST_ONE, "element": TEST_ONE, "edit": True}
 
         result = self._run_module(args)
 
         assert result["changed"]
-        assert connection_mock.set.call_count == 1
+        assert connection_mock.edit.call_count == 1
 
     def test_create_fail(self, connection_mock):
-        connection_mock.get.return_value = GET_ALL_EMPTY
+        connection_mock.get.return_value = GET_ADDRESS_EMPTY
 
-        args = {"xpath": XPATH_ALL}
+        args = {"xpath": XPATH_TEST_ONE, "edit": True}
 
         result = self._run_module_fail(args)
 
         assert "'element' is required" in result["msg"]
 
     def test_create_idempotent(self, connection_mock):
-        connection_mock.get.return_value = GET_ALL_TEST_ONE
+        connection_mock.get.return_value = GET_ADDRESS_TEST_ONE
 
-        args = {"xpath": XPATH_ALL, "element": TEST_ONE}
+        args = {"xpath": XPATH_TEST_ONE, "element": TEST_ONE, "edit": True}
 
         result = self._run_module(args)
 
@@ -114,9 +241,9 @@ class TestPanosConfigElement(ModuleTestCase):
         assert connection_mock.set.call_count == 0
 
     def test_modify(self, connection_mock):
-        connection_mock.get.return_value = GET_TEST_ONE
+        connection_mock.get.return_value = GET_ADDRESS_TEST_ONE
 
-        args = {"xpath": XPATH_TEST_ONE, "element": TEST_ONE_MOD, "override": True}
+        args = {"xpath": XPATH_TEST_ONE, "element": TEST_ONE_MOD, "edit": True}
 
         result = self._run_module(args)
 
@@ -124,7 +251,7 @@ class TestPanosConfigElement(ModuleTestCase):
         assert connection_mock.edit.call_count == 1
 
     def test_delete(self, connection_mock):
-        connection_mock.get.return_value = GET_TEST_ONE
+        connection_mock.get.return_value = GET_ADDRESS_TEST_ONE
 
         args = {"xpath": XPATH_TEST_ONE, "state": "absent"}
 
@@ -134,7 +261,7 @@ class TestPanosConfigElement(ModuleTestCase):
         assert connection_mock.delete.call_count == 1
 
     def test_delete_idempotent(self, connection_mock):
-        connection_mock.get.return_value = GET_TEST_ONE_EMPTY
+        connection_mock.get.return_value = GET_ADDRESS_EMPTY
 
         args = {"xpath": XPATH_TEST_ONE, "state": "absent"}
 
@@ -142,3 +269,46 @@ class TestPanosConfigElement(ModuleTestCase):
 
         assert not result["changed"]
         assert connection_mock.delete.call_count == 0
+
+    def test_simple_set(self, connection_mock):
+        connection_mock.get.return_value = GET_EMPTY_SYSTEM
+
+        args = {
+            "xpath": XPATH_SYSTEM,
+            "element": SIMPLE_SET,
+        }
+
+        result = self._run_module(args)
+
+        assert result["changed"] is True
+        assert connection_mock.set.call_count == 1
+
+    def test_simple_set_modify(self, connection_mock):
+        connection_mock.get.return_value = GET_SYSTEM
+
+        args = {"xpath": XPATH_SYSTEM, "element": "<login-banner>foo</login-banner>"}
+
+        result = self._run_module(args)
+
+        assert result["changed"] is True
+        assert connection_mock.set.call_count == 1
+
+    def test_complex_set(self, connection_mock):
+        connection_mock.get.return_value = GET_EMPTY_SYSTEM
+
+        args = {"xpath": XPATH_SYSTEM, "element": COMPLEX_SET}
+
+        result = self._run_module(args)
+
+        assert result["changed"]
+
+    def test_complex_set_idempotent(self, connection_mock):
+        connection_mock.get.return_value = GET_SYSTEM
+
+        args = {"xpath": XPATH_SYSTEM, "element": COMPLEX_SET}
+
+        result = self._run_module(args)
+
+        print(result)
+
+        assert not result["changed"]

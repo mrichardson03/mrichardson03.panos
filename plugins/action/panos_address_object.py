@@ -82,7 +82,7 @@ class ActionModule(ActionBase):
         # Adjust the module arguments based on whether we're adding or deleting
         # an object.
         if state == "present":
-            module_args = {"xpath": xpath, "override": True, "element": element}
+            module_args = {"xpath": xpath, "edit": True, "element": element}
         else:
             module_args = {"xpath": xpath, "state": "absent"}
 
