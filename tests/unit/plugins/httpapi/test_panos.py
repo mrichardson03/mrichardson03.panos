@@ -3,10 +3,11 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 from ansible.module_utils.six import BytesIO
+from ansible.module_utils.six.moves import urllib
 from ansible_collections.paloaltonetworks.panos_enhanced.plugins.httpapi.panos import (
     HttpApi,
 )
@@ -88,6 +89,209 @@ class TestPanosHttpApi:
         ret_value = self.plugin.version()
 
         assert ret_value["sw-version"] == "10.0.2"
+
+    @pytest.mark.parametrize(
+        "xpath", [None, "/config/devices/entry[@name='localhost.localdomain']"]
+    )
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_get(self, mock_send_request, mock_api_key, xpath):
+        mock_send_request.return_value = (
+            200,
+            "<request status='success'><result/></request>",
+        )
+        mock_api_key.return_value = "foo"
+
+        params = {"type": "config", "key": "foo", "action": "get"}
+
+        if xpath:
+            params.update({"xpath": xpath})
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.get(xpath=xpath)
+
+        mock_send_request.assert_called_once_with(data)
+
+    @pytest.mark.parametrize(
+        "xpath,element",
+        [
+            (
+                "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system",
+                "<login-banner>foo</login-banner>",
+            )
+        ],
+    )
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_set(self, mock_send_request, mock_api_key, xpath, element):
+        mock_send_request.return_value = (
+            200,
+            "<request status='success'><result/></request>",
+        )
+        mock_api_key.return_value = "foo"
+
+        params = {
+            "type": "config",
+            "key": "foo",
+            "action": "set",
+            "xpath": xpath,
+            "element": element,
+        }
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.set(xpath, element)
+
+        mock_send_request.assert_called_once_with(data)
+
+    @pytest.mark.parametrize(
+        "xpath,element",
+        [
+            (
+                "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system",
+                "<login-banner>foo</login-banner>",
+            )
+        ],
+    )
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_edit(self, mock_send_request, mock_api_key, xpath, element):
+        mock_send_request.return_value = (
+            200,
+            "<request status='success'><result/></request>",
+        )
+        mock_api_key.return_value = "foo"
+
+        params = {
+            "type": "config",
+            "key": "foo",
+            "action": "edit",
+            "xpath": xpath,
+            "element": element,
+        }
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.edit(xpath, element)
+
+        mock_send_request.assert_called_once_with(data)
+
+    @pytest.mark.parametrize(
+        "xpath",
+        [
+            "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system",
+        ],
+    )
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_delete(self, mock_send_request, mock_api_key, xpath):
+        mock_send_request.return_value = (
+            200,
+            "<request status='success'><result/></request>",
+        )
+        mock_api_key.return_value = "foo"
+
+        params = {"type": "config", "key": "foo", "action": "delete", "xpath": xpath}
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.delete(xpath)
+
+        mock_send_request.assert_called_once_with(data)
+
+    @pytest.mark.parametrize("description", [None, "test description"])
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_commit(self, mock_send_request, mock_api_key, description):
+        mock_send_request.return_value = (
+            200,
+            "<request status='success'><result/></request>",
+        )
+        mock_api_key.return_value = "foo"
+
+        cmd = "<commit>"
+
+        if description:
+            cmd += "<description>{0}</description>".format(description)
+
+        cmd += "</commit>"
+
+        params = {"type": "commit", "key": "foo", "cmd": cmd}
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.commit(description=description)
+
+        mock_send_request.assert_called_once_with(data)
+
+    @pytest.mark.parametrize(
+        "response,validate",
+        [
+            ("<request status='success'><result/></request>", True),
+            ("This isn't valid XML", False),
+        ],
+    )
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_op(self, mock_send_request, mock_api_key, response, validate):
+        mock_send_request.return_value = (
+            200,
+            response,
+        )
+        mock_api_key.return_value = "foo"
+
+        cmd = "<show><system><info></info></system></show>"
+
+        params = {"type": "op", "key": "foo", "cmd": cmd}
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.op(cmd, validate=validate)
+
+        mock_send_request.assert_called_once_with(data)
+
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_op_poll(self, mock_send_request, mock_api_key):
+        mock_send_request.side_effect = [
+            (
+                200,
+                "<response status='success'><result><job>1</job></result></response>",
+            ),
+            (
+                200,
+                "<response status='success'><result><job><status>PEND</status></job></result></response>",
+            ),
+            (
+                200,
+                "<response status='success'><result><job><status>FIN</status></job></result></response>",
+            ),
+        ]
+        mock_api_key.return_value = "foo"
+
+        cmd = "<show><jobs><id>1</id></jobs></show>"
+
+        params = {"type": "op", "key": "foo", "cmd": cmd}
+
+        data = urllib.parse.urlencode(params)
+
+        self.plugin.op(cmd, poll=True)
+
+        assert mock_send_request.call_args_list[0] == call(data)
+        assert mock_send_request.call_count == 3
+
+    @patch.object(HttpApi, "api_key")
+    @patch.object(HttpApi, "send_request")
+    def test_poll_for_job_connection_error(self, mock_send_request, mock_api_key):
+        mock_send_request.return_value = (
+            200,
+            "<response status='success'><result/></response>",
+        )
+        mock_api_key.return_value = "foo"
+
+        with pytest.raises(ConnectionError):
+            self.plugin.poll_for_job(1)
 
     @pytest.mark.parametrize(
         "http_status,http_response",
