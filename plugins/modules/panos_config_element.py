@@ -167,6 +167,9 @@ def snippets_contained(big, small):
     """
     results = {}
 
+    if big is None:
+        return False
+
     snippets = list(small)
 
     # If small doesn't have any children, it's only a single element.
@@ -174,7 +177,7 @@ def snippets_contained(big, small):
         snippets.append(small)
 
     for snippet in snippets:
-        for child in big:
+        for child in list(big.iter()):
             if xml_compare(child, snippet):
                 results.update({snippet.tag: True})
                 break
