@@ -6,8 +6,10 @@ from unittest import mock
 from unittest.mock import call, patch
 
 import pytest
+from ansible.module_utils.basic import to_text
 from ansible.module_utils.six import BytesIO
 from ansible.module_utils.six.moves import urllib
+from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible_collections.paloaltonetworks.panos_enhanced.plugins.httpapi.panos import (
     HttpApi,
 )
@@ -70,11 +72,9 @@ class TestPanosHttpApi:
         "response,status,expected",
         [(GOOD_KEYGEN, 200, "foo"), (BAD_KEYGEN, 401, None)],
     )
-    def test_keygen(self, response, status, expected):
-        self.connection_mock.send.return_value = self._connection_response(
-            response,
-            status=status,
-        )
+    @patch.object(HttpApi, "send_request")
+    def test_keygen(self, mock_send_request, response, status, expected):
+        mock_send_request.return_value = (status, response)
 
         key = self.plugin.keygen("USERNAME", "PASSWORD")
 
@@ -308,20 +308,47 @@ class TestPanosHttpApi:
             self.plugin._validate_response(http_status, http_response)
 
     @pytest.mark.parametrize(
-        "http_status,http_response",
+        "http_status,http_response,msg",
         [
-            (200, "<request status='error' code='1'></request>"),
-            (403, "<request status='error' code='403'></request>"),
+            (200, "<request status='error' code='1'></request>", "Unknown Command"),
+            (403, "<request status='error' code='403'></request>", "Forbidden"),
         ],
     )
-    def test_validate_response_api_exception(self, http_status, http_response):
-        with pytest.raises(ConnectionError):
+    def test_validate_response_api_exception(self, http_status, http_response, msg):
+        with pytest.raises(ConnectionError) as e:
             self.plugin._validate_response(http_status, http_response)
 
+        assert msg in str(e.value)
+
+    @pytest.mark.parametrize(
+        "params,headers,data",
+        [(None, None, None), ({"type": "config"}, {"X-PAN-KEY": "foo"}, "some data")],
+    )
+    def test_send_request(self, params, headers, data):
+        self.connection_mock.send.return_value = self._send_response(
+            200,
+            "<request status='success'></request>",
+        )
+
+        (code, response) = self.plugin.send_request(
+            data=data, params=params, headers=headers
+        )
+
+        assert code == 200
+        assert "success" in to_text(response)
+
+    def test_send_request_too_long(self):
+        with pytest.raises(ConnectionError) as e:
+            data = "x" * int(5e6 + 1)
+
+            self.plugin.send_request(data=data)
+
+        assert "too large" in str(e.value)
+
     @staticmethod
-    def _connection_response(response, status=200):
+    def _send_response(status_code, response):
         response_mock = mock.Mock()
-        response_mock.getcode.return_value = status
+        response_mock.getcode.return_value = status_code
         response_text = response
         response_data = BytesIO(
             response_text.encode() if response_text else "".encode()
