@@ -38,7 +38,6 @@ options:
 import time
 import xml.etree.ElementTree
 
-from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
@@ -477,10 +476,13 @@ class HttpApi(HttpApiBase):
             path += "?{0}".format(params)
 
         if data is None:
-            data = {}
+            data = ""
 
         if headers is None:
             headers = {}
+
+        if len(data.encode("utf-8")) > int(5e6):
+            raise ConnectionError("Data too large for XML API request")
 
         headers.update(
             {
