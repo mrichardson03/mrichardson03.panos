@@ -36,10 +36,12 @@ Ansible roles for common tasks are also included:
 
 ## Installation
 
-Install this collection using the Ansible Galaxy CLI:
+Install this collection using the Ansible Galaxy CLI, and install the required
+Python libraries:
 
 ```
 ansible-galaxy collection install mrichardson03.panos
+pip3 install --user xmltodict==0.12.0 requests==2.22.0
 ```
 
 ## Usage
@@ -151,7 +153,9 @@ ansible_httpapi_use_ssl=True
 ansible_httpapi_validate_certs=False
 ```
 
-See the [httpapi connection documentation](https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/httpapi_connection.html) for the full list of options.
+See the
+[httpapi connection documentation](https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/httpapi_connection.html)
+for the full list of options.
 
 Authentication via API key is also supported using the variable
 `ansible_api_key`.
@@ -161,21 +165,3 @@ Authentication via API key is also supported using the variable
 This collection is written for Python 3.6.8, which is the version used in the
 default Ansible Tower/AWX virtual environment. Newer versions of Python will
 likely work, but are not tested.
-
-## Support
-
-This template/solution is released under an as-is, best effort, support
-policy. These scripts should be seen as community supported and Palo
-Alto Networks will contribute our expertise as and when possible. We do
-not provide technical support or help in using or troubleshooting the
-components of the project through our normal support options such as
-Palo Alto Networks support teams, or ASC (Authorized Support Centers)
-partners and backline support options. The underlying product used (the
-VM-Series firewall) by the scripts or templates are still supported, but
-the support is only for the product functionality and not for help in
-deploying or using the template or script itself.
-
-Unless explicitly tagged, all projects or work posted in our GitHub
-repository (at <https://github.com/PaloAltoNetworks>) or sites other
-than our official Downloads page on <https://support.paloaltonetworks.com>
-are provided under the best effort policy.
