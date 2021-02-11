@@ -21,8 +21,8 @@ import xml.etree.ElementTree
 import pytest
 from ansible_collections.mrichardson03.panos.plugins.modules import panos_config_element
 from ansible_collections.mrichardson03.panos.plugins.modules.panos_config_element import (
-    snippets_contained,
     xml_compare,
+    xml_contained,
 )
 
 from .common.utils import ModuleTestCase
@@ -140,36 +140,92 @@ BIG_XML = """
     <two>
         <three>three text</three>
         <four>four text</four>
+        <five>
+            <six>six text</six>
+        </five>
+    </two>
+    <entry name="one">
+        <one>
+            <member>member1</member>
+            <member>member2</member>
+        </one>
+    </entry>
+    <entry name="two">
+        <two>
+            <member>member3</member>
+        </two>
+    </entry>
+</one>
+"""
+
+# True
+SMALL_ONE = """
+<one>
+    <two>
+        <three>three text</three>
+        <four>four text</four>
     </two>
 </one>
 """
 
-SMALL_ONE = "<three>three text</three>"
-SMALL_TWO = "<four>four text</four>"
+# True
+SMALL_TWO = """
+<one>
+    <two>
+        <five>
+            <six>six text</six>
+        </five>
+    </two>
+</one>
+"""
 
+# False - keys match, but wrong place in tree
 SMALL_THREE = """
-<two>
+<one>
     <three>three text</three>
-    <four>four text</four>
-</two>
+</one>
+"""
+
+# True - member tags match exactly
+SMALL_FOUR = """
+<one>
+    <entry name="one">
+        <one>
+            <member>member1</member>
+            <member>member2</member>
+        </one>
+    </entry>
+</one>
+"""
+
+# False - member counts don't match exactly
+SMALL_FIVE = """
+<one>
+    <entry name="one">
+        <one>
+            <member>member1</member>
+        </one>
+    </entry>
+</one>
 """
 
 
 @pytest.mark.parametrize(
-    "big_xml,small_xml,result",
+    "small_xml,result",
     [
-        (BIG_XML, SMALL_ONE, True),
-        (BIG_XML, SMALL_TWO, True),
-        (BIG_XML, SMALL_THREE, True),
-        (BIG_XML, "<five/>", False),
-        (None, SMALL_ONE, False),
+        (None, False),
+        (SMALL_ONE, True),
+        (SMALL_TWO, True),
+        (SMALL_THREE, False),
+        (SMALL_FOUR, True),
+        (SMALL_FIVE, False),
     ],
 )
-def test_snippets_contained(big_xml, small_xml, result):
-    big = make_etree(big_xml)
+def test_xml_contained(small_xml, result):
+    big = make_etree(BIG_XML)
     small = make_etree(small_xml)
 
-    assert snippets_contained(big, small) is result
+    assert xml_contained(big, small) is result
 
 
 class TestPanosConfigElement(ModuleTestCase):

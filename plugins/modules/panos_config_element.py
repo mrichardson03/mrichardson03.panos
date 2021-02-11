@@ -162,35 +162,64 @@ def text_compare(one, two):
     return (one or "").strip() == (two or "").strip()
 
 
-def snippets_contained(big, small):
+def iterpath(node, tag=None, path="."):
     """
-    Check to see if all the XML snippets contained in "small" are present in
-    "big".
+    Similar to Element.iter(), but the iterator gives each element's path along
+    with the element itself.
+
+    Reference: https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element.iter
+
+    Taken from: https://stackoverflow.com/questions/13136334/get-xpath-dynamically-using-elementtree-getpath
+    """
+    if tag == "*":
+        tag = None
+
+    if tag is None or node.tag == tag:
+        yield node, path
+
+    for child in node:
+        if child.tag == "entry":
+            _child_path = "{0}/{1}[@name='{2}']".format(
+                path, child.tag, child.attrib["name"]
+            )
+        else:
+            _child_path = "{0}/{1}".format(path, child.tag)
+
+        for child, child_path in iterpath(child, tag, path=_child_path):
+            yield child, child_path
+
+
+def xml_contained(big, small):
+    """
+    Check to see if all the XML elements with no children in "small" are
+    present in "big", at the same locations in the tree.
+
+    This ensures all the configuration in "small" is contained in "big", but
+    "big" can have configuration not contained in "small".
 
     :param big: Big document ElementTree.
     :param small: Small document ElementTree.
     """
-    results = {}
 
-    if big is None:
+    if big is None or small is None:
         return False
 
-    snippets = list(small)
+    for element, path in iterpath(small):
 
-    # If small doesn't have any children, it's only a single element.
-    if not snippets:
-        snippets.append(small)
+        # Elements with "member" children must have all their children be equal.
+        if element.find("*/member/..") is not None:
+            big_element = big.find(path)
 
-    for snippet in snippets:
-        for child in list(big.iter()):
-            if xml_compare(child, snippet):
-                results.update({snippet.tag: True})
-                break
+            if not xml_compare(big_element, element):
+                return False
 
-    # Check to see if all snippets in "small" were found in "big".
-    for snippet in snippets:
-        if snippet.tag not in results:
-            return False
+        # Elements with no children at the same point in the tree must match
+        # exactly.
+        elif len(element) == 0 and (element.tag != "member"):
+            big_element = big.find(path)
+
+            if not xml_compare(big_element, element):
+                return False
 
     return True
 
@@ -243,7 +272,7 @@ def main():
                         "<wrapped>" + element_xml + "</wrapped>"
                     )
 
-                if not snippets_contained(existing, element):
+                if not xml_contained(existing, element):
                     changed = True
 
                     if not module.check_mode:  # pragma: no cover
