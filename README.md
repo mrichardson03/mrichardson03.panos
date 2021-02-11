@@ -1,11 +1,11 @@
 # PAN-OS Ansible Collection - mrichardson03.panos
 
-![CI/CD](https://github.com/PaloAltoNetworks/panos_enhanced/workflows/CI/CD/badge.svg)
+![CI/CD](https://github.com/mrichardson03/mrichardson03.panos/workflows/CI/CD/badge.svg)
 
 Ansible collection for automating configuration and operational tasks on
 Palo Alto Networks Next Generation Firewalls using the PAN-OS API.
 
-For more documentation, check the [project wiki](https://github.com/PaloAltoNetworks/panos_enhanced/wiki).
+For more documentation, check the [project wiki](https://github.com/mrichardson03/mrichardson03.panos/wiki).
 
 ## How is this different than paloaltonetworks.panos?
 
@@ -28,10 +28,10 @@ This collection is **not backwards compatible** with `paloaltonetworks.panos`.
 
 Ansible roles for common tasks are also included:
 
-- [onboard](https://github.com/PaloAltoNetworks/panos_enhanced/tree/develop/roles/onboard):
+- [onboard](https://github.com/mrichardson03/mrichardson03.panos/tree/develop/roles/onboard):
   Performs common initial configuration steps: licensing, install latest content,
   upgrade to a new PAN-OS version.
-- [ironskillet](https://github.com/PaloAltoNetworks/panos_enhanced/tree/develop/roles/ironskillet):
+- [ironskillet](https://github.com/mrichardson03/mrichardson03.panos/tree/develop/roles/ironskillet):
   Installs a best practices initial configuration.
 
 ## Installation
@@ -112,7 +112,7 @@ ansible-galaxy collection install mrichardson03.panos
 ### Customization through Action Plugins
 
 Don't care for XML in your playbooks? Use an
-[action plugin](https://github.com/PaloAltoNetworks/panos_enhanced/blob/develop/plugins/action/panos_address_object.py)
+[action plugin](https://github.com/mrichardson03/mrichardson03.panos/blob/develop/plugins/action/panos_address_object.py)
 to turn this:
 
 ```yaml

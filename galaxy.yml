@@ -43,16 +43,16 @@ tags:
 dependencies: {}
 
 # The URL of the originating SCM repository
-repository: https://github.com/PaloAltoNetworks/panos_enhanced
+repository: https://github.com/mrichardson03/mrichardson03.panos
 
 # The URL to any online docs
-documentation: https://github.com/PaloAltoNetworks/panos_enhanced
+documentation: https://github.com/mrichardson03/mrichardson03.panos
 
 # The URL to the homepage of the collection/project
-homepage: https://github.com/PaloAltoNetworks/panos_enhanced
+homepage: https://github.com/mrichardson03/mrichardson03.panos
 
 # The URL to the collection issue tracker
-issues: https://github.com/PaloAltoNetworks/panos_enhanced/issues
+issues: https://github.com/mrichardson03/mrichardson03.panos/issues
 
 # A list of file glob-like patterns used to filter any files or directories that should not be included in the build
 # artifact. A pattern is matched from the relative path of the file or directory of the collection directory. This
