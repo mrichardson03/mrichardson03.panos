@@ -84,8 +84,6 @@ docs/_diagrams
 *.retry
 *.swp
 
-.vscode/
-
 tests/output/
 
 docs/html/
@@ -93,3 +91,5 @@ docs/source/modules/
 
 tests/integration/inventory
 tests/integration/*.log
+
+*.tar.gz
