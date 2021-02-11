@@ -27,7 +27,7 @@ notes:
     - Panorama is supported.
     - Check mode is supported.
 extends_documentation_fragment:
-    - paloaltonetworks.panos_enhanced.fragments.state
+    - mrichardson03.panos.fragments.state
 options:
     name:
         description:

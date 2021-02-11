@@ -17,7 +17,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.paloaltonetworks.panos_enhanced.plugins.modules import (
+from ansible_collections.mrichardson03.panos.plugins.modules import (
     panos_commit,
 )
 

@@ -8,10 +8,10 @@ collection := $(notdir $(realpath $(CURDIR)      ))
 namespace  := $(notdir $(realpath $(CURDIR)/..   ))
 toplevel   := $(notdir $(realpath $(CURDIR)/../..))
 
-err_msg := Place collection at <WHATEVER>/ansible_collections/paloaltonetworks/panos_enhanced
-ifneq (panos_enhanced,$(collection))
+err_msg := Place collection at <WHATEVER>/ansible_collections/mrichardson03/panos
+ifneq (panos,$(collection))
   $(error $(err_msg))
-else ifneq (paloaltonetworks,$(namespace))
+else ifneq (mrichardson03,$(namespace))
   $(error $(err_msg))
 else ifneq (ansible_collections,$(toplevel))
   $(error $(err_msg))
