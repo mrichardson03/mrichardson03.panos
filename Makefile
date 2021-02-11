@@ -48,8 +48,11 @@ docs:  ## Build collection documentation
 
 .PHONY: clean
 clean:  ## Remove all auto-generated files
-	$(MAKE) -C docs -f Makefile.custom clean
 	rm -rf tests/output
+	rm -rf *.tar.gz
+
+build:
+	ansible-galaxy collection build
 
 format:
 	black .
@@ -60,5 +63,7 @@ check-format:
 	isort --check .
 
 sync-deps:
-	poetry export -f requirements.txt > requirements.txt
-	poetry export -f requirements.txt --dev > requirements-dev.txt
+	pipenv lock --requirements > requirements.txt
+
+test-release:
+	semantic-release --dry-run --no-ci --branches=develop
