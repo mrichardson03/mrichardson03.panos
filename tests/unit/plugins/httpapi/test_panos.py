@@ -10,9 +10,7 @@ from ansible.module_utils.basic import to_text
 from ansible.module_utils.six import BytesIO
 from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
-from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import (
-    HttpApi,
-)
+from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
 
 GOOD_KEYGEN = """
 <response><result><key>foo</key></result></response>

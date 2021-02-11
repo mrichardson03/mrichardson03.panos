@@ -3,9 +3,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    cmd_xml,
-)
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
 
 
 def test_cmd_xml():
