@@ -48,7 +48,7 @@ jobs:
           make build
 
   automerge:
-    name: Auto-merge
+    name: auto-merge
     needs: test
     runs-on: ubuntu-latest
     steps:
