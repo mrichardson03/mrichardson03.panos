@@ -1,4 +1,4 @@
-# PAN-OS Ansible Collection - paloaltonetworks.panos_enhanced
+# PAN-OS Ansible Collection - mrichardson03.panos
 
 ![CI/CD](https://github.com/PaloAltoNetworks/panos_enhanced/workflows/CI/CD/badge.svg)
 
@@ -39,7 +39,7 @@ Ansible roles for common tasks are also included:
 Install this collection using the Ansible Galaxy CLI:
 
 ```
-ansible-galaxy collection install paloaltonetworks.panos_enhanced
+ansible-galaxy collection install mrichardson03.panos
 ```
 
 ## Usage
@@ -51,7 +51,7 @@ ansible-galaxy collection install paloaltonetworks.panos_enhanced
 - hosts: firewall
 
   collections:
-    - paloaltonetworks.panos_enhanced
+    - mrichardson03.panos
 
   vars:
     address_objects:
@@ -145,7 +145,7 @@ fw        ansible_host=192.168.55.10
 ansible_user=admin
 ansible_password=P4loalto!
 
-ansible_network_os=paloaltonetworks.panos_enhanced.panos
+ansible_network_os=mrichardson03.panos.panos
 ansible_connection=httpapi
 ansible_httpapi_use_ssl=True
 ansible_httpapi_validate_certs=False

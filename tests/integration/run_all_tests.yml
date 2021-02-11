@@ -6,7 +6,7 @@
     blank_config: blank.xml
 
   collections:
-    - paloaltonetworks.panos_enhanced
+    - mrichardson03.panos
 
   tasks:
     - name: Run test
@@ -21,7 +21,7 @@
     blank_config: blank.xml
 
   collections:
-    - paloaltonetworks.panos_enhanced
+    - mrichardson03.panos
 
   tasks:
     - name: Run test

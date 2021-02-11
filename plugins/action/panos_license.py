@@ -84,7 +84,7 @@ class ActionModule(ActionBase):
                 time.sleep(600)
 
                 self._execute_module(
-                    module_name="paloaltonetworks.panos_enhanced.panos_check",
+                    module_name="mrichardson03.panos.panos_check",
                     task_vars=task_vars,
                 )
 
