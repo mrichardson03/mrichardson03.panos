@@ -1,6 +1,6 @@
 # Taken from: https://github.com/sensu/sensu-go-ansible/blob/master/Makefile
 
-# Make sure we have ansible_collections/paloaltonetworks/panos_enhanced
+# Make sure we have ansible_collections/mrichardson03/panos
 # as a prefix. This is ugly as heck, but it works. I suggest all future
 # developer to treat next few lines as an opportunity to learn a thing or two
 # about GNU make ;)
