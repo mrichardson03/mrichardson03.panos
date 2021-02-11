@@ -19,9 +19,7 @@ __metaclass__ = type
 import xml.etree.ElementTree
 
 import pytest
-from ansible_collections.mrichardson03.panos.plugins.modules import (
-    panos_config_element,
-)
+from ansible_collections.mrichardson03.panos.plugins.modules import panos_config_element
 from ansible_collections.mrichardson03.panos.plugins.modules.panos_config_element import (
     snippets_contained,
 )
