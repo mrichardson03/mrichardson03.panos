@@ -62,7 +62,7 @@ jobs:
   release:
     name: release
     if: github.event_name == 'push' && github.ref != 'refs/heads/develop'
-    needs: [sanity]
+    needs: [test]
     runs-on: ubuntu-latest
 
     steps:
