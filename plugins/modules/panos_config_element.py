@@ -124,10 +124,15 @@ def xml_compare(one, two, excludes=None):
         # Tag does not match.
         return False
 
+    # Compare attributes.
     for name, value in one.attrib.items():
         if name not in excludes:
             if two.attrib.get(name) != value:
-                # Attributes do not match.
+                return False
+
+    for name, value in two.attrib.items():
+        if name not in excludes:
+            if one.attrib.get(name) != value:
                 return False
 
     if not text_compare(one.text, two.text):
@@ -225,7 +230,7 @@ def main():
                 if not xml_compare(existing, element):
                     changed = True
 
-                    if not module.check_mode:
+                    if not module.check_mode:  # pragma: no cover
                         module.connection.edit(xpath, element_xml)
 
             else:
@@ -241,7 +246,7 @@ def main():
                 if not snippets_contained(existing, element):
                     changed = True
 
-                    if not module.check_mode:
+                    if not module.check_mode:  # pragma: no cover
                         module.connection.set(xpath, element_xml)
 
             diff = {
@@ -255,7 +260,7 @@ def main():
             if existing is not None:
                 changed = True
 
-                if not module.check_mode:
+                if not module.check_mode:  # pragma: no cover
                     module.connection.delete(xpath)
 
                 diff = {"before": existing_xml, "after": ""}
