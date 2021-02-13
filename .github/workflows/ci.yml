@@ -29,23 +29,33 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
-          python -m pipenv install --dev --system
+
+      - id: cache-pipenv
+        uses: actions/cache@v1
+        with:
+          path: ~/.local/share/virtualenvs
+          key: pipenv-${{ hashFiles('**/Pipfile.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          pipenv install --dev
 
       - name: Check format
         run:
-          make check-format
+          pipenv run make check-format
 
       - name: ansible-test sanity
         run:
-          make sanity
+          pipenv run make sanity
 
       - name: ansible-test units
         run:
-          make units
+          pipenv run make units
 
       - name: ansible-galaxy collection build
         run:
-          make build
+          pipenv run make build
 
   automerge:
     name: auto-merge
