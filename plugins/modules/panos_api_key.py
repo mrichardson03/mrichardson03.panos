@@ -66,9 +66,9 @@ def main():
             module.exit_json(changed=False, api_key=api_key)
         else:
             module.fail_json(msg="Invalid credential")
-    except ConnectionError as e:
+    except ConnectionError as e:  # pragma: no cover
         module.fail_json(msg="{0}".format(e))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
