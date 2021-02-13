@@ -76,7 +76,7 @@ try:
     import xmltodict
 
     HAS_LIB = True
-except ImportError:
+except ImportError:  # pragma: no cover
     HAS_LIB = False
 
 from ansible.module_utils.connection import ConnectionError
@@ -127,9 +127,9 @@ def main():
                 stdout_xml=results_xml,
             )
 
-    except ConnectionError as e:
+    except ConnectionError as e:  # pragma: no cover
         module.fail_json(msg="{0}".format(e))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

@@ -80,7 +80,7 @@ try:
     import xmltodict
 
     HAS_LIB = True
-except ImportError:
+except ImportError:  # pragma: no cover
     HAS_LIB = False
 
 from ansible.module_utils.connection import ConnectionError
@@ -97,7 +97,7 @@ def main():
         supports_check_mode=False,
     )
 
-    if not HAS_LIB:
+    if not HAS_LIB:  # pragma: no cover
         module.fail_json(msg="Missing required libraries.")
 
     cmd = module.params["cmd"]
@@ -118,9 +118,9 @@ def main():
         json_output = json.dumps(obj_dict)
 
         module.exit_json(changed=changed, stdout_xml=xml_output, stdout=json_output)
-    except ConnectionError as e:
+    except ConnectionError as e:  # pragma: no cover
         module.fail_json(msg="{0}".format(e))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
