@@ -198,28 +198,46 @@ class TestPanosHttpApi:
 
         mock_send_request.assert_called_once_with(data)
 
-    @pytest.mark.parametrize("description", [None, "test description"])
+    @pytest.mark.parametrize(
+        "commit_args,expected",
+        [
+            ({}, "<commit />"),
+            ({"force": True}, "<commit><force /></commit>"),
+            (
+                {"description": "test description"},
+                "<commit><description>test description</description></commit>",
+            ),
+            (
+                {"exclude_device_and_network": True},
+                "<commit><partial><device-and-network>excluded</device-and-network></partial></commit>",
+            ),
+            (
+                {"exclude_policy_and_objects": True},
+                "<commit><partial><policy-and-objects>excluded</policy-and-objects></partial></commit>",
+            ),
+            (
+                {"exclude_shared_objects": True},
+                "<commit><partial><shared-object>excluded</shared-object></partial></commit>",
+            ),
+            (
+                {"admins": ["admin1", "admin2"]},
+                "<commit><partial><admin><member>admin1</member><member>admin2</member></admin></partial></commit>",
+            ),
+        ],
+    )
     @patch.object(HttpApi, "api_key")
     @patch.object(HttpApi, "send_request")
-    def test_commit(self, mock_send_request, mock_api_key, description):
+    def test_commit(self, mock_send_request, mock_api_key, commit_args, expected):
         mock_send_request.return_value = (
             200,
             "<request status='success'><result/></request>",
         )
         mock_api_key.return_value = "foo"
-
-        cmd = "<commit>"
-
-        if description:
-            cmd += "<description>{0}</description>".format(description)
-
-        cmd += "</commit>"
-
-        params = {"type": "commit", "key": "foo", "cmd": cmd}
+        params = {"type": "commit", "key": "foo", "cmd": expected}
 
         data = urllib.parse.urlencode(params)
 
-        self.plugin.commit(description=description)
+        self.plugin.commit(**commit_args)
 
         mock_send_request.assert_called_once_with(data)
 
@@ -310,13 +328,15 @@ class TestPanosHttpApi:
         [
             (200, "<request status='error' code='1'></request>", "Unknown Command"),
             (403, "<request status='error' code='403'></request>", "Forbidden"),
+            (200, "<request/>", None),
         ],
     )
     def test_validate_response_api_exception(self, http_status, http_response, msg):
         with pytest.raises(ConnectionError) as e:
             self.plugin._validate_response(http_status, http_response)
 
-        assert msg in str(e.value)
+        if msg:
+            assert msg in str(e.value)
 
     @pytest.mark.parametrize(
         "params,headers,data",
