@@ -21,6 +21,7 @@ python_version := $(shell \
   python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))' \
 )
 
+all: check-format sanity units build
 
 .PHONY: help
 help:
@@ -28,42 +29,42 @@ help:
 	@fgrep "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sort
 
 .PHONY: sanity
-sanity:  ## Run sanity tests
+sanity:		## Run sanity tests
 	ansible-test sanity --python $(python_version)
 
 .PHONY: units
-units:  ## Run unit tests
+units:		## Run unit tests
 	./fix-pytest-ini.py
 	-ansible-test coverage erase # On first run, there is nothing to erase.
 	ansible-test units --python $(python_version) --coverage
 	ansible-test coverage html
 
 .PHONY: integration
-integration:  ## Run integration tests
+integration:	## Run integration tests
 	$(MAKE) -C tests/integration $(CI)
 
 .PHONY: docs
-docs:  ## Build collection documentation
+docs:		## Build collection documentation
 	$(MAKE) -C docs -f Makefile.custom docs
 
 .PHONY: clean
-clean:  ## Remove all auto-generated files
+clean:		## Remove all auto-generated files
 	rm -rf tests/output
 	rm -rf *.tar.gz
 
-build:
+build:		## Build collection
 	ansible-galaxy collection build
 
-format:
+format:		## Format with black, isort
 	black .
 	isort .
 
-check-format:
+check-format:	## Check with black, isort
 	black --check .
 	isort --check .
 
-sync-deps:
+sync-deps:	## Sync Pipfile.lock to requirements.txt
 	pipenv lock --requirements > requirements.txt
 
-test-release:
+test-release:	## Semantic release dry run
 	semantic-release --dry-run --no-ci --branches=develop
