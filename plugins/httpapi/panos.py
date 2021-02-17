@@ -36,7 +36,8 @@ options:
 """
 
 import time
-import xml.etree.ElementTree
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
 
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.six.moves import urllib
@@ -71,6 +72,10 @@ PANOS_API_CODES = {
     "21": "Internal Error",
     "22": "Session Timed Out",
 }
+
+
+class TimedOutException(Exception):
+    pass
 
 
 class HttpApi(HttpApiBase):
@@ -118,7 +123,7 @@ class HttpApi(HttpApiBase):
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
-        root = xml.etree.ElementTree.fromstring(response)
+        root = ET.fromstring(response)
         key = root.find("./result/key")
 
         if key is not None:
@@ -268,34 +273,69 @@ class HttpApi(HttpApiBase):
     def commit(
         self,
         force=False,
-        partial=False,
         exclude_device_and_network=False,
-        exclude_shared_object=False,
+        exclude_policy_and_objects=False,
+        exclude_shared_objects=False,
         admins=None,
         description=None,
     ):
         """
         Commits the candidate configuration to the device.
 
-        :param validate: Validate configuration - do not actually commit.
         :param force: Perform a force commit.
-        :param partial: Perform a partial commit.
-        :param exclude_device_and_network: Exclude device and network configuration
-        from a partial commit.
-        :param exclude_shared_objects: Exclude shared objects from a partial commit.
-        :param admins: Only commit changes from certain administrators.
+        :param exclude_device_and_network: Perform a partial commit, excluding
+        device and network configuration from Panorama.
+        :param exclude_policy_and_objects: Perform a partial commit, excluding
+        policy and object configuration from Panorama.
+        :param exclude_shared_objects: Perform a partial commit, excluding
+        shared object configuration from Panorama.
+        :param admins: Perform a partial commit, only commiting changes from
+        these administrators.
 
         Reference:
         https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/pan-os-xml-api-request-types/commit-configuration-api/commit.html
         """
-        cmd = "<commit>"
+        cmd = ET.Element("commit")
+
+        if force:
+            sub_force = ET.SubElement(cmd, "force")
 
         if description:
-            cmd += "<description>{0}</description>".format(description)
+            sub_desc = ET.SubElement(cmd, "description")
+            sub_desc.text = description
 
-        cmd += "</commit>"
+        if (
+            exclude_device_and_network
+            or exclude_policy_and_objects
+            or exclude_shared_objects
+            or admins
+        ):
+            sub_partial = ET.SubElement(cmd, "partial")
 
-        params = {"type": "commit", "key": self.api_key(), "cmd": cmd}
+            if exclude_device_and_network:
+                sub_exclude_device_network = ET.SubElement(
+                    sub_partial, "device-and-network"
+                )
+                sub_exclude_device_network.text = "excluded"
+
+            if exclude_policy_and_objects:
+                sub_exclude_policy_and_objects = ET.SubElement(
+                    sub_partial, "policy-and-objects"
+                )
+                sub_exclude_policy_and_objects.text = "excluded"
+
+            if exclude_shared_objects:
+                sub_exclude_shared_objects = ET.SubElement(sub_partial, "shared-object")
+                sub_exclude_shared_objects.text = "excluded"
+
+            if isinstance(admins, list):
+                sub_admins = ET.SubElement(sub_partial, "admin")
+
+                for admin in admins:
+                    m = ET.SubElement(sub_admins, "member")
+                    m.text = admin
+
+        params = {"type": "commit", "key": self.api_key(), "cmd": ET.tostring(cmd)}
 
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
@@ -304,9 +344,8 @@ class HttpApi(HttpApiBase):
 
     def commit_all(self, validate=False, device_groups=None, vsys=None, serials=None):
         """
-        Validate and push shared policies from a Panorama device.
+        Push policy and template configuration from a Panorama device.
 
-        :param validate: Validate configuration - do not actually push.
         :param device_groups: Commit to specific device groups.
         :param vsys: Commit to specific virtual system.
         :param serials: Commit to specific firewall serial numbers.
@@ -345,7 +384,7 @@ class HttpApi(HttpApiBase):
             response = self._validate_response(code, response)
 
         if poll:
-            op_result = xml.etree.ElementTree.fromstring(response)
+            op_result = ET.fromstring(response)
 
             job_element = op_result.find(".//job")
             job_id = job_element.text
@@ -376,7 +415,7 @@ class HttpApi(HttpApiBase):
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
-        root = xml.etree.ElementTree.fromstring(response)
+        root = ET.fromstring(response)
         result = root.find("./result")
 
         self._device_info = {}
@@ -393,7 +432,7 @@ class HttpApi(HttpApiBase):
 
         return self._device_info
 
-    def poll_for_job(self, job_id, interval=5):
+    def poll_for_job(self, job_id, interval=5, timeout=600):
         """
         Polls for job completion.
 
@@ -403,13 +442,17 @@ class HttpApi(HttpApiBase):
         cmd = "<show><jobs><id>{0}</id></jobs></show>".format(job_id)
 
         display.vvvv(
-            "poll_for_job(): job_id = {0}, interval = {1}".format(job_id, interval)
+            "poll_for_job(): job_id = {0}, interval = {1}, timeout = {2}".format(
+                job_id, interval, timeout
+            )
         )
 
-        while True:
+        max_end_time = datetime.utcnow() + timedelta(seconds=timeout)
+
+        while datetime.utcnow() < max_end_time:
             result = self.op(cmd, is_xml=True)
 
-            root = xml.etree.ElementTree.fromstring(result)
+            root = ET.fromstring(result)
             status = root.find("./result/job/status")
 
             if status is None:
@@ -423,6 +466,8 @@ class HttpApi(HttpApiBase):
                 return result
             else:
                 time.sleep(interval)
+
+        raise TimedOutException("Timed out waiting for job id {0}".format(job_id))
 
     def is_panorama(self):
         """
@@ -515,7 +560,7 @@ class HttpApi(HttpApiBase):
             raise ConnectionError("Invalid response from API")
 
         data = to_text(http_response)
-        root = xml.etree.ElementTree.fromstring(data)
+        root = ET.fromstring(data)
 
         display.vvvv("_validate_response(): response = {0}".format(data))
 

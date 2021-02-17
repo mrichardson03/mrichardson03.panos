@@ -32,11 +32,47 @@ notes:
     - Panorama is supported.
     - Check mode is supported.
 options:
+    force:
+        description:
+            - Perform a force commit.
+        type: bool
+        default: False
+    exclude_device_and_network:
+        description:
+            - Perform a partial commit, excluding device and network
+              configurationa.
+        type: bool
+        default: False
+    exclude_policy_and_objects:
+        description:
+            - Perform a partial commit, excluding policy and object
+              configuration.
+        type: bool
+        default: False
+    exclude_shared_objects:
+        description:
+            - Perform a partial commit, excluding shared object configuration.
+        type: bool
+        default: False
+    description:
+        description:
+            - Description to add to commit.
+        type: str
     admins:
         description:
             - Commit only the changes made by the specified administrators.
         type: list
         elements: str
+    sleep:
+        description:
+            - Check commit status every X seconds.
+        type: int
+        default: 10
+    timeout:
+        description:
+            - Generate an error if commit has not completed after X seconds.
+        type: int
+        default: 600
 """
 
 EXAMPLES = """
@@ -68,68 +104,3 @@ stdout_xml:
     type: str
     sample: "<response status=success><result><system><hostname>fw2</hostname>"
 """
-
-import json
-import xml.etree.ElementTree as ET
-
-try:
-    import xmltodict
-
-    HAS_LIB = True
-except ImportError:  # pragma: no cover
-    HAS_LIB = False
-
-from ansible.module_utils.connection import ConnectionError
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAnsibleModule,
-)
-
-
-def parse_xml(xmlstr):
-    return ET.fromstring(xmlstr)
-
-
-def main():
-    module = PanOSAnsibleModule(
-        argument_spec=dict(admins=dict(type="list", elements="str")),
-        supports_check_mode=True,
-    )
-
-    try:
-        changes = parse_xml(module.connection.op("check pending-changes", is_xml=False))
-        result = changes.find("./result").text
-
-        if result == "no":
-            module.exit_json(changed=False, msg="There are no changes to commit.")
-
-        commit = parse_xml(module.connection.commit(admins=module.params["admins"]))
-        job_id = commit.find("./result/job")
-
-        if job_id is None:
-            module.fail_json(msg="Could not find commit job.")
-        else:
-            job_id = job_id.text
-
-        results_xml = module.connection.poll_for_job(job_id)
-        results = parse_xml(results_xml)
-        results_dict = xmltodict.parse(results_xml)
-
-        commit_result = results.find("./result/job/result").text
-
-        if commit_result == "OK":
-            module.exit_json(
-                changed=True, stdout=json.dumps(results_dict), stdout_xml=results_xml
-            )
-        else:
-            module.fail_json(
-                msg="Commit failed.",
-                stdout=json.dumps(results_dict),
-                stdout_xml=results_xml,
-            )
-
-    except ConnectionError as e:  # pragma: no cover
-        module.fail_json(msg="{0}".format(e))
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()
