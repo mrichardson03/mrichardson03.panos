@@ -77,10 +77,6 @@ class ActionModule(ActionBase):
         commit_args["description"] = self._task.args.get("description", None)
         commit_args["admins"] = self._task.args.get("admins", None)
 
-        if self._play_context.check_mode:
-            display.vvv("panos_commit: skipping for check_mode")
-            return dict(skipped=True)
-
         result = super().run(tmp, task_vars)
         del tmp  # tmp is unused
 
@@ -97,17 +93,20 @@ class ActionModule(ActionBase):
                 result["changed"] = False
                 result["msg"] = "No changes to commit."
             else:
-                commit = self._connection.commit(**commit_args)
-                commit_job = ET.fromstring(commit).findtext(".//job")
-                display.debug("commit job: {0}".format(commit_job))
+                if not self._play_context.check_mode:
+                    commit = self._connection.commit(**commit_args)
+                    commit_job = ET.fromstring(commit).findtext(".//job")
+                    display.debug("commit job: {0}".format(commit_job))
 
-                commit_result = self._connection.poll_for_job(
-                    commit_job, interval=sleep, timeout=timeout
-                )
+                    commit_result = self._connection.poll_for_job(
+                        commit_job, interval=sleep, timeout=timeout
+                    )
 
-                result["changed"] = True
-                result["stdout"] = json.dumps(xmltodict.parse(commit_result))
-                result["stdout_xml"] = commit_result
+                    result["changed"] = True
+                    result["stdout"] = json.dumps(xmltodict.parse(commit_result))
+                    result["stdout_xml"] = commit_result
+                else:
+                    result["changed"] = True
 
         except ConnectionError as e:
             result["failed"] = True
