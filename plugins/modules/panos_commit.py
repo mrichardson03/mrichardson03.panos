@@ -63,6 +63,16 @@ options:
             - Commit only the changes made by the specified administrators.
         type: list
         elements: str
+    sleep:
+        description:
+            - Check commit status every X seconds.
+        type: int
+        default: 10
+    timeout:
+        description:
+            - Generate an error if commit has not completed after X seconds.
+        type: int
+        default: 600
 """
 
 EXAMPLES = """

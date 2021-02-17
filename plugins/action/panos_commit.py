@@ -59,7 +59,7 @@ class ActionModule(ActionBase):
         if task_vars is None:
             task_vars = dict()
 
-        delay = int(self._task.args.get("delay", self.DEFAULT_DELAY))
+        delay = self.DEFAULT_DELAY
         sleep = int(self._task.args.get("sleep", self.DEFAULT_SLEEP))
         timeout = int(self._task.args.get("timeout", self.DEFAULT_TIMEOUT))
 
