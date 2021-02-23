@@ -256,9 +256,7 @@ def interface_facts(conn):
 
 def main():
     module = PanOSAnsibleModule(
-        argument_spec=dict(
-            gather_subset=dict(default=["all"], type="list", elements="str")
-        ),
+        argument_spec=dict(),
         supports_check_mode=False,
     )
 
