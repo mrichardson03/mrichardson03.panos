@@ -42,6 +42,11 @@
   register: upgrade
   when: version is defined
 
+- name: Wait for reboot
+  wait_for:
+    timeout: 30
+  when: upgrade is changed
+
 - name: Wait until ready
   panos_check:
   when: upgrade is changed
