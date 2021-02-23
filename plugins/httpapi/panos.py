@@ -475,6 +475,9 @@ class HttpApi(HttpApiBase):
 
         :returns: Boolean if this device is a Panorama or not.
         """
+        if self._device_info is None:
+            self.version()
+
         return True if self._device_info["model"] == "Panorama" else False
 
     def update_auth(self, response, response_text):
