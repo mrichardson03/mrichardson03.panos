@@ -1,0 +1,9 @@
+---
+# - import_tasks: 'reset.yml'
+
+- name: test_panos_facts - Gather facts
+  panos_facts:
+  register: result
+
+- debug:
+    var: result
