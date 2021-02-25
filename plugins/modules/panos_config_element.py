@@ -115,7 +115,7 @@ def xml_compare(one, two, excludes=None):
     :param excludes: List of tag attributes to disregard.
     """
     if excludes is None:
-        excludes = ["admin", "dirtyId", "time"]
+        excludes = ["admin", "dirtyId", "time", "uuid"]
 
     if one is None or two is None:
         return False
