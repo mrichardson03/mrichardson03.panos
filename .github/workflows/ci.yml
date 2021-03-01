@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-pipenv-
 
       - name: Install dependencies (if no cache hit)
-        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        # if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
           pipenv install --dev
 
