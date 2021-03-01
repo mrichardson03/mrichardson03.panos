@@ -117,7 +117,7 @@ class ActionModule(ActionBase):
             self.do_until_success_or_timeout(timeout, sleep)
 
         except TimedOutException as e:
-            raise AnsibleError("Timeout waiting for autocommit.")
+            raise AnsibleError("Timeout waiting for autocommit.") from e
 
         elapsed = datetime.now() - start
         result["elapsed"] = elapsed.seconds
