@@ -24,6 +24,7 @@ import time
 import xml.etree.ElementTree
 from datetime import datetime, timedelta
 
+from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
 from ansible.plugins.action import ActionBase
 from ansible.utils.display import Display
@@ -116,8 +117,7 @@ class ActionModule(ActionBase):
             self.do_until_success_or_timeout(timeout, sleep)
 
         except TimedOutException as e:
-            result["failed"] = True
-            result["msg"] = to_text(e)
+            raise AnsibleError("Timeout waiting for autocommit.")
 
         elapsed = datetime.now() - start
         result["elapsed"] = elapsed.seconds
