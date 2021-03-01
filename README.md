@@ -157,9 +157,6 @@ See the
 [httpapi connection documentation](https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/httpapi_connection.html)
 for the full list of options.
 
-Authentication via API key is also supported using the variable
-`ansible_api_key`.
-
 ## Python Compatability
 
 This collection is written for Python 3.6.8, which is the version used in the
