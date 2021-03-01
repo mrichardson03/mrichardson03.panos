@@ -273,8 +273,6 @@ def main():
     except ConnectionError as e:
         module.fail_json(msg="{0}".format(e))
 
-    ansible_facts["ansible_net_serial_num"] = "booyah!"
-
     module.exit_json(ansible_facts=ansible_facts)
 
 
