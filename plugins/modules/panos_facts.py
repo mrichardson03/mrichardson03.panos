@@ -147,6 +147,19 @@ def system_facts(conn):
         }
     )
 
+    # grab VM-Series specific information if available
+    if facts["ansible_net_model"] == "PA-VM":
+        facts.update(
+            {
+                "ansible_net_vm_uuid": system_info.findtext("vm-uuid"),
+                "ansible_net_vm_cpuid": system_info.findtext("vm-cpuid"),
+                "ansible_net_vm_license": system_info.findtext("vm-license"),
+                "ansible_net_vm_cap_tier": system_info.findtext("vm-cap-tier"),
+                "ansible_net_vm_cores": system_info.findtext("vm-cores"),
+                "ansible_net_vm_mem": system_info.findtext("vm-mem"),
+                "ansible_net_vm_mode": system_info.findtext("vm-mode"),
+            }
+        )
     # Check uncommitted changes
     pending_changes_xml = conn.op("check pending-changes", is_xml=False)
     pending_changes = ET.fromstring(pending_changes_xml).findtext("./result")
