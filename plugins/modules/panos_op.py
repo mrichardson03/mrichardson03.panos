@@ -98,7 +98,7 @@ def main():
     )
 
     if not HAS_LIB:  # pragma: no cover
-        module.fail_json(msg="Missing required libraries.")
+        module.fail_json(msg="Missing required libraries (xmltodict).")
 
     cmd = module.params["cmd"]
     cmd_is_xml = module.params["cmd_is_xml"]
