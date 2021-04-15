@@ -44,7 +44,10 @@ from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.plugins.httpapi import HttpApiBase
 from ansible.utils.display import Display
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+    PanOSAuthError,
+    cmd_xml,
+)
 
 display = Display()
 
@@ -122,6 +125,9 @@ class HttpApi(HttpApiBase):
 
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
+
+        if code == 403:
+            raise PanOSAuthError("Incorrect Username or Password")
 
         root = ET.fromstring(response)
         key = root.find("./result/key")
