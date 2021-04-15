@@ -28,6 +28,9 @@ from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
 from ansible.plugins.action import ActionBase
 from ansible.utils.display import Display
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+    PanOSAuthError,
+)
 
 display = Display()
 
@@ -83,6 +86,12 @@ class ActionModule(ActionBase):
                         )
                     )
                     time.sleep(sleep)
+            except PanOSAuthError:
+                display.error(
+                    "panos_check: connection error (authentication), check username and password"
+                )
+                raise
+
             except Exception:
                 display.debug(
                     "panos_check: connection error (expected), retrying in {0} seconds".format(

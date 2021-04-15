@@ -52,6 +52,10 @@ class PanOSAPIError(ConnectionError):
     pass
 
 
+class PanOSAuthError(PanOSAPIError):
+    pass
+
+
 class PanOSAnsibleModule(AnsibleModule):
     def __init__(
             self,
