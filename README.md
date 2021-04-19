@@ -48,12 +48,6 @@ pip3 install --user xmltodict==0.12.0 requests==2.22.0
 
 ### Sample Playbook
 
-Note that you may need to set the following environment variable:
-
-```bash
-export no_proxy="*"
-```
-
 ```yaml
 ---
 - hosts: firewall
