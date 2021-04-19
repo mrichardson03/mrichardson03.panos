@@ -126,8 +126,9 @@ class HttpApi(HttpApiBase):
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
-        # always validate response to keygen
-        response = self._validate_response(code, response)
+        # Add explicit check for authentication errors
+        if code == 403:
+            raise PanOSAuthError("Forbidden")
 
         root = ET.fromstring(response)
         key = root.find("./result/key")
@@ -570,7 +571,7 @@ class HttpApi(HttpApiBase):
 
         # Add explicit check for authentication errors
         if http_code == 403:
-            raise PanOSAuthError("Error Authenticating to the API")
+            raise PanOSAuthError("Forbidden")
 
         data = to_text(http_response)
         root = ET.fromstring(data)

@@ -11,13 +11,11 @@ from ansible.module_utils.six import BytesIO
 from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import PanOSAuthError
+
 
 GOOD_KEYGEN = """
 <response><result><key>foo</key></result></response>
-"""
-
-BAD_KEYGEN = """
-<response><result><msg>Invalid Credential</msg></result></response>
 """
 
 VERSION = """
@@ -68,7 +66,7 @@ class TestPanosHttpApi:
 
     @pytest.mark.parametrize(
         "response,status,expected",
-        [(GOOD_KEYGEN, 200, "foo"), (BAD_KEYGEN, 401, None)],
+        [(GOOD_KEYGEN, 200, "foo")],
     )
     @patch.object(HttpApi, "send_request")
     def test_keygen(self, mock_send_request, response, status, expected):
@@ -327,12 +325,24 @@ class TestPanosHttpApi:
         "http_status,http_response,msg",
         [
             (200, "<request status='error' code='1'></request>", "Unknown Command"),
-            (403, "<request status='error' code='403'></request>", "Forbidden"),
             (200, "<request/>", None),
         ],
     )
     def test_validate_response_api_exception(self, http_status, http_response, msg):
         with pytest.raises(ConnectionError) as e:
+            self.plugin._validate_response(http_status, http_response)
+
+        if msg:
+            assert msg in str(e.value)
+
+    @pytest.mark.parametrize(
+        "http_status,http_response,msg",
+        [
+            (403, "<request status='error' code='403'></request>", "Forbidden"),
+        ],
+    )
+    def test_validate_response_api_exception(self, http_status, http_response, msg):
+        with pytest.raises(PanOSAuthError) as e:
             self.plugin._validate_response(http_status, http_response)
 
         if msg:
