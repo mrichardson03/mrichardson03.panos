@@ -60,6 +60,34 @@ ansible_net_uptime:
     returned: always
     type: str
     sample: 469 days, 19:30:16
+ansible_net_vm_uuid: 
+    description: UUID of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
+ansible_net_vm_cpuid: 
+    description: CPU ID of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
+ansible_net_vm_license: 
+    description: PA-VM License of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
+ansible_net_vm_cap_tier: 
+    description: VM Capacity Tier of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
+ansible_net_vm_cpu_count:
+    description: Number of vCPU Cores of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
+ansible_net_vm_memory: 
+    description: Memory (in bytes) of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
+ansible_net_vm_mode: 
+    description: VM Mode of the local node.
+    returned: When the device model is "PA-VM"
+    type: str
 ansible_net_full_commit_required:
     description: Specifies whether full commit is required to apply changes.
     returned: always
@@ -155,8 +183,8 @@ def system_facts(conn):
                 "ansible_net_vm_cpuid": system_info.findtext("vm-cpuid"),
                 "ansible_net_vm_license": system_info.findtext("vm-license"),
                 "ansible_net_vm_cap_tier": system_info.findtext("vm-cap-tier"),
-                "ansible_net_vm_cores": system_info.findtext("vm-cores"),
-                "ansible_net_vm_mem": system_info.findtext("vm-mem"),
+                "ansible_net_vm_cpu_count": system_info.findtext("vm-cpu-count"),
+                "ansible_net_vm_memory": system_info.findtext("vm-memory"),
                 "ansible_net_vm_mode": system_info.findtext("vm-mode"),
             }
         )
