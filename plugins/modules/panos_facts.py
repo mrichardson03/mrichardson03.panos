@@ -60,19 +60,19 @@ ansible_net_uptime:
     returned: always
     type: str
     sample: 469 days, 19:30:16
-ansible_net_vm_uuid: 
+ansible_net_vm_uuid:
     description: UUID of the local node.
     returned: When the device model is "PA-VM"
     type: str
-ansible_net_vm_cpuid: 
+ansible_net_vm_cpuid:
     description: CPU ID of the local node.
     returned: When the device model is "PA-VM"
     type: str
-ansible_net_vm_license: 
+ansible_net_vm_license:
     description: PA-VM License of the local node.
     returned: When the device model is "PA-VM"
     type: str
-ansible_net_vm_cap_tier: 
+ansible_net_vm_cap_tier:
     description: VM Capacity Tier of the local node.
     returned: When the device model is "PA-VM"
     type: str
@@ -80,11 +80,11 @@ ansible_net_vm_cpu_count:
     description: Number of vCPU Cores of the local node.
     returned: When the device model is "PA-VM"
     type: str
-ansible_net_vm_memory: 
+ansible_net_vm_memory:
     description: Memory (in bytes) of the local node.
     returned: When the device model is "PA-VM"
     type: str
-ansible_net_vm_mode: 
+ansible_net_vm_mode:
     description: VM Mode of the local node.
     returned: When the device model is "PA-VM"
     type: str
