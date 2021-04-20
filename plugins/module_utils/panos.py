@@ -22,7 +22,11 @@ import re
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection, ConnectionError
 
-PANOS_API_CODES = {
+# List of valid API error codes and names.
+#
+# Reference:
+# https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/get-started-with-the-pan-os-xml-api/pan-os-xml-api-error-codes.html
+_PANOS_API_ERROR_CODES = {
     "400": "Bad Request",
     "403": "Forbidden",
     "1": "Unknown Command",
@@ -49,7 +53,27 @@ PANOS_API_CODES = {
 
 
 class PanOSAPIError(ConnectionError):
-    pass
+    """ Exception representing a PAN-OS API error. """
+
+    def __init__(self, code, message):
+        if code not in _PANOS_API_ERROR_CODES:
+            self._code = "-1"
+            msg = "Unknown PAN-OS API Error: {0}".format(message)
+        else:
+            self._code = code
+            msg = "{0} ({1}): {2}".format(_PANOS_API_ERROR_CODES[code], code, message)
+
+        super().__init__(msg)
+
+    @property
+    def code(self):
+        """
+        Returns the PAN-OS API status code for this error.
+
+        This may correspond to the HTTP status code used to deliver the
+        response, but not always.
+        """
+        return self._code
 
 
 class PanOSAnsibleModule(AnsibleModule):
