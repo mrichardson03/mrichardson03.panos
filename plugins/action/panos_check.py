@@ -128,6 +128,9 @@ class ActionModule(ActionBase):
         except TimedOutException as e:
             raise AnsibleError("Timeout waiting for autocommit.") from e
 
+        except PanOSAuthError as e:
+            raise AnsibleError("Invalid Credentials") from e
+
         elapsed = datetime.now() - start
         result["elapsed"] = elapsed.seconds
 

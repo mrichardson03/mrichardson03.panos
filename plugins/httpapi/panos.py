@@ -126,17 +126,18 @@ class HttpApi(HttpApiBase):
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
-        # Add explicit check for authentication errors
-        if code == 403:
-            raise PanOSAuthError("Forbidden")
-
         root = ET.fromstring(response)
         key = root.find("./result/key")
 
         if key is not None:
             return key.text
+
         else:
-            return None
+            msg = root.find("./result/msg")
+            if msg is not None and msg.text == "Invalid Credential":
+                raise PanOSAuthError("Forbidden")
+            else:
+                return None
 
     def show(self, xpath=None):
         """
@@ -568,10 +569,6 @@ class HttpApi(HttpApiBase):
         # XML API piggybacks on HTTP 400 and 403 error codes.
         if http_code not in [200, 400, 403]:
             raise ConnectionError("Invalid response from API")
-
-        # Add explicit check for authentication errors
-        if http_code == 403:
-            raise PanOSAuthError("Forbidden")
 
         data = to_text(http_response)
         root = ET.fromstring(data)

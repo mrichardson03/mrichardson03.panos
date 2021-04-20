@@ -11,11 +11,16 @@ from ansible.module_utils.six import BytesIO
 from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import PanOSAuthError
-
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+    PanOSAuthError,
+)
 
 GOOD_KEYGEN = """
 <response><result><key>foo</key></result></response>
+"""
+
+BAD_KEYGEN = """
+<response><result><msg>Invalid Credential</msg></result></response>
 """
 
 VERSION = """
@@ -75,6 +80,18 @@ class TestPanosHttpApi:
         key = self.plugin.keygen("USERNAME", "PASSWORD")
 
         assert key == expected
+
+    @pytest.mark.parametrize(
+        "response,status,expected",
+        [(BAD_KEYGEN, 200, "Forbidden")],
+    )
+    @patch.object(HttpApi, "send_request")
+    def test_keygen_exception(self, mock_send_request, response, status, expected):
+        with pytest.raises(PanOSAuthError) as e:
+            mock_send_request.return_value = (status, response)
+            self.plugin.keygen("USERNAME", "PASSWORD")
+
+        assert expected in str(e.value)
 
     @patch.object(HttpApi, "api_key")
     @patch.object(HttpApi, "send_request")
@@ -325,24 +342,12 @@ class TestPanosHttpApi:
         "http_status,http_response,msg",
         [
             (200, "<request status='error' code='1'></request>", "Unknown Command"),
+            (403, "<request status='error' code='403'></request>", "Forbidden"),
             (200, "<request/>", None),
         ],
     )
     def test_validate_response_api_exception(self, http_status, http_response, msg):
         with pytest.raises(ConnectionError) as e:
-            self.plugin._validate_response(http_status, http_response)
-
-        if msg:
-            assert msg in str(e.value)
-
-    @pytest.mark.parametrize(
-        "http_status,http_response,msg",
-        [
-            (403, "<request status='error' code='403'></request>", "Forbidden"),
-        ],
-    )
-    def test_validate_response_api_exception(self, http_status, http_response, msg):
-        with pytest.raises(PanOSAuthError) as e:
             self.plugin._validate_response(http_status, http_response)
 
         if msg:
