@@ -44,14 +44,15 @@ from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.plugins.httpapi import HttpApiBase
 from ansible.utils.display import Display
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAPIError,
-    cmd_xml,
-)
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
 
 display = Display()
 
-PANOS_API_CODES = {
+# List of valid API error codes and names.
+#
+# Reference:
+# https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/get-started-with-the-pan-os-xml-api/pan-os-xml-api-error-codes.html
+_PANOS_API_ERROR_CODES = {
     "400": "Bad Request",
     "403": "Forbidden",
     "1": "Unknown Command",
@@ -75,6 +76,30 @@ PANOS_API_CODES = {
     "21": "Internal Error",
     "22": "Session Timed Out",
 }
+
+
+class PanOSAPIError(ConnectionError):
+    """ Exception representing a PAN-OS API error. """
+
+    def __init__(self, code, message):
+        if code not in _PANOS_API_ERROR_CODES:
+            self._code = "-1"
+            msg = "Unknown PAN-OS API Error: {0}".format(message)
+        else:
+            self._code = code
+            msg = "{0} ({1}): {2}".format(_PANOS_API_ERROR_CODES[code], code, message)
+
+        super().__init__(msg)
+
+    @property
+    def code(self):
+        """
+        Returns the PAN-OS API status code for this error.
+
+        This may correspond to the HTTP status code used to deliver the
+        response, but not always.
+        """
+        return self._code
 
 
 class TimedOutException(Exception):
