@@ -44,7 +44,10 @@ from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.plugins.httpapi import HttpApiBase
 from ansible.utils.display import Display
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
+    PanOSAPIError,
+    cmd_xml,
+)
 
 display = Display()
 
@@ -126,6 +129,8 @@ class HttpApi(HttpApiBase):
         root = ET.fromstring(response)
         key = root.find("./result/key")
 
+        # Keygen doesn't follow the normal rules for responses from the API, so
+        # DON'T call _validate_response() here.
         if key is not None:
             return key.text
         else:
@@ -558,7 +563,11 @@ class HttpApi(HttpApiBase):
     @staticmethod
     def _validate_response(http_code, http_response):
 
-        # XML API piggybacks on HTTP 400 and 403 error codes.
+        # Valid XML-API responses can be contained in the following HTTP status
+        # codes:
+        #   400 - Bad Request (malformed request)
+        #   403 - Forbidden (invalid credentials)
+        #   200 - OK (HTTP request was OK, but still can be an XML-API error)
         if http_code not in [200, 400, 403]:
             raise ConnectionError("Invalid response from API")
 
@@ -569,21 +578,15 @@ class HttpApi(HttpApiBase):
 
         status = root.attrib.get("status")
         api_code = root.attrib.get("code")
-        msg = root.findtext(".//msg/line")
+
+        # Handle multi-line messages (commit warnings, etc)
+        msg_lines = root.findall(".//msg/line")
+        msg = ", ".join([line.text for line in msg_lines])
 
         # Successful responses that AREN'T keygen type all have 'success'
         # attributes.
         if status != "success":
-            message = ""
-
-            if api_code and api_code in PANOS_API_CODES:
-                message = "{0} ({1}): {2}".format(
-                    api_code, PANOS_API_CODES[api_code], msg
-                )
-            else:
-                message = "{0}".format(msg)
-
-            raise ConnectionError(message)
+            raise PanOSAPIError(api_code, msg)
 
         # For whatever reason, Ansible wants a JSON serializable response ONLY,
         # so return unparsed data.
