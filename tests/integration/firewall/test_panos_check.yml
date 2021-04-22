@@ -3,6 +3,8 @@
 
 - name: test_panos_check - Check ready
   panos_check:
+    sleep: 30
+    timeout: 12000
   register: result
 
 - name: test_panos_check - Assert Success
