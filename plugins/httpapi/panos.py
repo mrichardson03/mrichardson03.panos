@@ -151,11 +151,12 @@ class HttpApi(HttpApiBase):
         data = urllib.parse.urlencode(params)
         code, response = self.send_request(data)
 
+        # Will throw exception if credentials are bad.
+        response = self._validate_response(code, response)
+
         root = ET.fromstring(response)
         key = root.find("./result/key")
 
-        # Keygen doesn't follow the normal rules for responses from the API, so
-        # DON'T call _validate_response() here.
         if key is not None:
             return key.text
         else:
@@ -604,13 +605,19 @@ class HttpApi(HttpApiBase):
         status = root.attrib.get("status")
         api_code = root.attrib.get("code")
 
-        # Handle multi-line messages (commit warnings, etc)
-        msg_lines = root.findall(".//msg/line")
-        msg = ", ".join([line.text for line in msg_lines])
+        # Parse out messages.
+        msg = ""
 
-        # Successful responses that AREN'T keygen type all have 'success'
-        # attributes.
-        if status != "success":
+        if root.findall(".//msg/line"):
+            # Handle multi-line messages (commit warnings, etc).
+            msg_lines = root.findall(".//msg/line")
+            msg = ", ".join([line.text for line in msg_lines])
+
+        elif root.find(".//msg"):
+            # Handle single line messages.
+            msg = root.find(".//msg").text
+
+        if status == "error":
             raise PanOSAPIError(api_code, msg)
 
         # For whatever reason, Ansible wants a JSON serializable response ONLY,
