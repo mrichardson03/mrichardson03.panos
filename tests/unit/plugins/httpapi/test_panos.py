@@ -329,8 +329,13 @@ class TestPanosHttpApi:
     @pytest.mark.parametrize(
         "http_status,http_response,api_code,msg",
         [
-            (200, "<request status='error' code='1'></request>", 1, "Unknown Command"),
-            (403, "<request status='error' code='403'></request>", 403, "Forbidden"),
+            (200, "<response status='error' code='1'/>", "1", "Unknown Command (1)"),
+            (
+                403,
+                "<response status='error' code='403'><result><msg>Invalid Credential</msg></result></response>",
+                "403",
+                "Forbidden (403): Invalid Credential",
+            ),
         ],
     )
     def test_validate_response_api_exception(
@@ -339,24 +344,8 @@ class TestPanosHttpApi:
         with pytest.raises(PanOSAPIError) as e:
             self.plugin._validate_response(http_status, http_response)
 
-            assert api_code == e.value.code
-            assert msg in str(e.value)
-
-    @pytest.mark.parametrize(
-        "http_status,http_response,msg_lines",
-        [
-            (
-                200,
-                "<request status='error' code='1'><msg><line>one</line><line>two</line></msg></request>",
-                "one, two",
-            )
-        ],
-    )
-    def test_validate_response_msg_lines(self, http_status, http_response, msg_lines):
-        with pytest.raises(PanOSAPIError) as e:
-            self.plugin._validate_response(http_status, http_response)
-
-            assert msg_lines in str(e.value)
+        assert api_code == e.value.code
+        assert msg == str(e.value)
 
     @pytest.mark.parametrize(
         "params,headers,data",
