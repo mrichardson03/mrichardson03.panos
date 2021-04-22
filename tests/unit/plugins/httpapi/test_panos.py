@@ -331,7 +331,6 @@ class TestPanosHttpApi:
         [
             (200, "<request status='error' code='1'></request>", 1, "Unknown Command"),
             (403, "<request status='error' code='403'></request>", 403, "Forbidden"),
-            (200, "<request/>", None, None),
         ],
     )
     def test_validate_response_api_exception(
