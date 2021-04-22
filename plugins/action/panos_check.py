@@ -28,9 +28,7 @@ from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
 from ansible.plugins.action import ActionBase
 from ansible.utils.display import Display
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAuthError,
-)
+from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import PanOSAPIError
 
 display = Display()
 
@@ -86,11 +84,18 @@ class ActionModule(ActionBase):
                         )
                     )
                     time.sleep(sleep)
-            except PanOSAuthError:
-                display.error(
-                    "panos_check: connection error (authentication), check username and password"
-                )
-                raise
+
+            except PanOSAPIError as e:
+                if e.code == "403":
+                    raise
+
+                else:
+                    display.debug(
+                        "panos_check: connection error (expected), retrying in {0} seconds".format(
+                            sleep
+                        )
+                    )
+                    time.sleep(sleep)
 
             except Exception:
                 display.debug(
@@ -128,7 +133,7 @@ class ActionModule(ActionBase):
         except TimedOutException as e:
             raise AnsibleError("Timeout waiting for autocommit.") from e
 
-        except PanOSAuthError as e:
+        except PanOSAPIError as e:
             raise AnsibleError("Invalid Credentials") from e
 
         elapsed = datetime.now() - start

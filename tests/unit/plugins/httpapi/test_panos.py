@@ -10,9 +10,9 @@ from ansible.module_utils.basic import to_text
 from ansible.module_utils.six import BytesIO
 from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
-from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import HttpApi
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAuthError,
+from ansible_collections.mrichardson03.panos.plugins.httpapi.panos import (
+    HttpApi,
+    PanOSAPIError,
 )
 
 GOOD_KEYGEN = """
@@ -87,7 +87,7 @@ class TestPanosHttpApi:
     )
     @patch.object(HttpApi, "send_request")
     def test_keygen_exception(self, mock_send_request, response, status, expected):
-        with pytest.raises(PanOSAuthError) as e:
+        with pytest.raises(PanOSAPIError) as e:
             mock_send_request.return_value = (status, response)
             self.plugin.keygen("USERNAME", "PASSWORD")
 
@@ -339,19 +339,37 @@ class TestPanosHttpApi:
             self.plugin._validate_response(http_status, http_response)
 
     @pytest.mark.parametrize(
-        "http_status,http_response,msg",
+        "http_status,http_response,api_code,msg",
         [
-            (200, "<request status='error' code='1'></request>", "Unknown Command"),
-            (403, "<request status='error' code='403'></request>", "Forbidden"),
-            (200, "<request/>", None),
+            (200, "<request status='error' code='1'></request>", 1, "Unknown Command"),
+            (403, "<request status='error' code='403'></request>", 403, "Forbidden"),
+            (200, "<request/>", None, None),
         ],
     )
-    def test_validate_response_api_exception(self, http_status, http_response, msg):
-        with pytest.raises(ConnectionError) as e:
+    def test_validate_response_api_exception(
+        self, http_status, http_response, api_code, msg
+    ):
+        with pytest.raises(PanOSAPIError) as e:
             self.plugin._validate_response(http_status, http_response)
 
-        if msg:
+            assert api_code == e.value.code
             assert msg in str(e.value)
+
+    @pytest.mark.parametrize(
+        "http_status,http_response,msg_lines",
+        [
+            (
+                200,
+                "<request status='error' code='1'><msg><line>one</line><line>two</line></msg></request>",
+                "one, two",
+            )
+        ],
+    )
+    def test_validate_response_msg_lines(self, http_status, http_response, msg_lines):
+        with pytest.raises(PanOSAPIError) as e:
+            self.plugin._validate_response(http_status, http_response)
+
+            assert msg_lines in str(e.value)
 
     @pytest.mark.parametrize(
         "params,headers,data",

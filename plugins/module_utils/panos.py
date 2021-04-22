@@ -20,51 +20,18 @@ __metaclass__ = type
 import re
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.connection import Connection, ConnectionError
-
-PANOS_API_CODES = {
-    "400": "Bad Request",
-    "403": "Forbidden",
-    "1": "Unknown Command",
-    "2": "Internal Error",
-    "3": "Internal Error",
-    "4": "Internal Error",
-    "5": "Internal Error",
-    "6": "Bad Xpath",
-    "7": "Object not present",
-    "8": "Object not unique",
-    "10": "Reference count not zero",
-    "11": "Internal Error",
-    "12": "Invalid Object",
-    "14": "Operation Not Possible",
-    "15": "Operation Denied",
-    "16": "Unauthorized",
-    "17": "Invalid Command",
-    "18": "Malformed Command",
-    "19": "Success",
-    "20": "Success",
-    "21": "Internal Error",
-    "22": "Session Timed Out",
-}
-
-
-class PanOSAPIError(ConnectionError):
-    pass
-
-
-class PanOSAuthError(PanOSAPIError):
-    pass
+from ansible.module_utils.connection import Connection
 
 
 class PanOSAnsibleModule(AnsibleModule):
     def __init__(
-            self,
-            argument_spec,
-            api_endpoint=None,
-            with_state=False,
-            with_enabled_state=False,
-            *args,
-            **kwargs
+        self,
+        argument_spec,
+        api_endpoint=None,
+        with_state=False,
+        with_enabled_state=False,
+        *args,
+        **kwargs
     ):
         spec = {}
 

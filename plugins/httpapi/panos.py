@@ -44,14 +44,15 @@ from ansible.module_utils.six.moves import urllib
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.plugins.httpapi import HttpApiBase
 from ansible.utils.display import Display
-from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
-    PanOSAuthError,
-    cmd_xml,
-)
+from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import cmd_xml
 
 display = Display()
 
-PANOS_API_CODES = {
+# List of valid API error codes and names.
+#
+# Reference:
+# https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-panorama-api/get-started-with-the-pan-os-xml-api/pan-os-xml-api-error-codes.html
+_PANOS_API_ERROR_CODES = {
     "400": "Bad Request",
     "403": "Forbidden",
     "1": "Unknown Command",
@@ -75,6 +76,30 @@ PANOS_API_CODES = {
     "21": "Internal Error",
     "22": "Session Timed Out",
 }
+
+
+class PanOSAPIError(ConnectionError):
+    """ Exception representing a PAN-OS API error. """
+
+    def __init__(self, code, message):
+        if code not in _PANOS_API_ERROR_CODES:
+            self._code = "-1"
+            msg = "Unknown PAN-OS API Error: {0}".format(message)
+        else:
+            self._code = code
+            msg = "{0} ({1}): {2}".format(_PANOS_API_ERROR_CODES[code], code, message)
+
+        super().__init__(msg)
+
+    @property
+    def code(self):
+        """
+        Returns the PAN-OS API status code for this error.
+
+        This may correspond to the HTTP status code used to deliver the
+        response, but not always.
+        """
+        return self._code
 
 
 class TimedOutException(Exception):
@@ -129,13 +154,15 @@ class HttpApi(HttpApiBase):
         root = ET.fromstring(response)
         key = root.find("./result/key")
 
+        # Keygen doesn't follow the normal rules for responses from the API, so
+        # DON'T call _validate_response() here.
         if key is not None:
             return key.text
 
         else:
             msg = root.find("./result/msg")
             if msg is not None and msg.text == "Invalid Credential":
-                raise PanOSAuthError("Forbidden")
+                raise PanOSAPIError("403", "Forbidden")
             else:
                 return None
 
@@ -566,7 +593,11 @@ class HttpApi(HttpApiBase):
     @staticmethod
     def _validate_response(http_code, http_response):
 
-        # XML API piggybacks on HTTP 400 and 403 error codes.
+        # Valid XML-API responses can be contained in the following HTTP status
+        # codes:
+        #   400 - Bad Request (malformed request)
+        #   403 - Forbidden (invalid credentials)
+        #   200 - OK (HTTP request was OK, but still can be an XML-API error)
         if http_code not in [200, 400, 403]:
             raise ConnectionError("Invalid response from API")
 
@@ -577,21 +608,15 @@ class HttpApi(HttpApiBase):
 
         status = root.attrib.get("status")
         api_code = root.attrib.get("code")
-        msg = root.findtext(".//msg/line")
+
+        # Handle multi-line messages (commit warnings, etc)
+        msg_lines = root.findall(".//msg/line")
+        msg = ", ".join([line.text for line in msg_lines])
 
         # Successful responses that AREN'T keygen type all have 'success'
         # attributes.
         if status != "success":
-            message = ""
-
-            if api_code and api_code in PANOS_API_CODES:
-                message = "{0} ({1}): {2}".format(
-                    api_code, PANOS_API_CODES[api_code], msg
-                )
-            else:
-                message = "{0}".format(msg)
-
-            raise ConnectionError(message)
+            raise PanOSAPIError(api_code, msg)
 
         # For whatever reason, Ansible wants a JSON serializable response ONLY,
         # so return unparsed data.
