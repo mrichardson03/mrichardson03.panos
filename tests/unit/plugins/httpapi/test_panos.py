@@ -71,7 +71,7 @@ class TestPanosHttpApi:
 
     @pytest.mark.parametrize(
         "response,status,expected",
-        [(GOOD_KEYGEN, 200, "foo"), (BAD_KEYGEN, 401, None)],
+        [(GOOD_KEYGEN, 200, "foo"), (BAD_KEYGEN, 403, None)],
     )
     @patch.object(HttpApi, "send_request")
     def test_keygen(self, mock_send_request, response, status, expected):
