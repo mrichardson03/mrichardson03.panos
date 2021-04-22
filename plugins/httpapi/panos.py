@@ -160,6 +160,11 @@ class HttpApi(HttpApiBase):
             return key.text
 
         else:
+            if code == 400:
+                # prevent returning None when device is still booting
+                # in the panos_check case, this is expected and will be handled accordingly
+                raise PanOSAPIError("400", "Connection Error")
+
             msg = root.find("./result/msg")
             if msg is not None and msg.text == "Invalid Credential":
                 raise PanOSAPIError("403", "Forbidden")

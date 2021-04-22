@@ -90,6 +90,9 @@ class ActionModule(ActionBase):
                     raise
 
                 else:
+                    # any PanOSAPIError other than a 403 is expected and OK to continue.
+                    # during boot the API will either time-out or return a 400. Once ready it will
+                    # return a 200 or 403 depending on validity of auth credentials
                     display.debug(
                         "panos_check: connection error (expected), retrying in {0} seconds".format(
                             sleep
