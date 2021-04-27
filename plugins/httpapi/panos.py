@@ -84,12 +84,13 @@ class PanOSAPIError(ConnectionError):
     def __init__(self, code, message):
         if code not in _PANOS_API_ERROR_CODES:
             self._code = "-1"
-            msg = "Unknown PAN-OS API Error: {0}".format(message)
+            msg = "Unspecified API Error"
         else:
             self._code = code
             msg = "{0} ({1})".format(_PANOS_API_ERROR_CODES[code], code)
-            if message:
-                msg += ": {0}".format(message)
+
+        if message:
+            msg += ": {0}".format(message)
 
         super().__init__(msg)
 
@@ -608,7 +609,16 @@ class HttpApi(HttpApiBase):
         api_code = root.attrib.get("code")
 
         if status == "error":
-            msg = root.findtext("./result/msg")
+            msg = None
+
+            # Error messages can be in multiple locations in the response.
+            if root.findtext("./result/msg"):
+                msg = root.findtext("./result/msg")
+
+            elif len(root.findall("./msg/line")) > 0:
+                lines = root.findall("./msg/line")
+                msg = ", ".join([line.text for line in lines])
+
             raise PanOSAPIError(api_code, msg)
 
         # For whatever reason, Ansible wants a JSON serializable response ONLY,

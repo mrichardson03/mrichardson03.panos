@@ -331,8 +331,22 @@ class TestPanosHttpApi:
         [
             (200, "<response status='error' code='1'/>", "1", "Unknown Command (1)"),
             (
+                200,
+                (
+                    "<response status='error'>"
+                    "<msg><line>first line</line><line>second line</line></msg>"
+                    "</response>"
+                ),
+                "-1",
+                "Unspecified API Error: first line, second line",
+            ),
+            (
                 403,
-                "<response status='error' code='403'><result><msg>Invalid Credential</msg></result></response>",
+                (
+                    "<response status='error' code='403'>"
+                    "<result><msg>Invalid Credential</msg></result>"
+                    "</response>"
+                ),
                 "403",
                 "Forbidden (403): Invalid Credential",
             ),
