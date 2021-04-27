@@ -33,12 +33,12 @@ notes:
 options:
     version:
         description:
-            - Desired PAN-OS release for target device.  If this version is a
-              release in the next PAN-OS version, the base image will be
+            - Desired PAN-OS release for target device.  If this version is in
+              the next PAN-OS release, the base image for that release will be
               downloaded as well.
             - For example, if the PAN-OS device is currently running 9.1.0, and
-              'version' is set to 10.0.2, the 10.0.0 base image will also be
-              downloaded.
+              'version' is set to 10.0.2, the 10.0.0 base image will be
+              downloaded and the 10.0.2 image will be downloaded and installed.
         type: str
         required: true
     sync_to_peer:
@@ -64,6 +64,13 @@ options:
               panos_check to determine when firewall is ready again.
         type: bool
         default: False
+    timeout:
+        description:
+            - Maximum amount of time (in seconds) each software download or
+              installation job performed by this module is allowed to run before
+              error.
+        type: int
+        default: 600
 """
 
 EXAMPLES = """
