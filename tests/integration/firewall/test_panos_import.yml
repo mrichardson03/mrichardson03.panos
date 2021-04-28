@@ -1,0 +1,13 @@
+---
+#- import_tasks: 'reset.yml'
+
+- name: test_panos_import - Check Import
+  panos_import:
+    category: configuration
+    filename: templates/baseline_config.xml
+  register: result
+
+- name: test_panos_import - Assert Success
+  assert:
+    that:
+      - result is success

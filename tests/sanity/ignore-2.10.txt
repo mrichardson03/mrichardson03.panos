@@ -9,3 +9,4 @@ plugins/modules/panos_license.py validate-modules:missing-gplv3-license
 plugins/modules/panos_op.py validate-modules:missing-gplv3-license
 plugins/modules/panos_snippet_group.py validate-modules:missing-gplv3-license
 plugins/modules/panos_software.py validate-modules:missing-gplv3-license
+plugins/modules/panos_import.py validate-modules:missing-gplv3-license
