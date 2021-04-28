@@ -14,6 +14,13 @@ Available variables are listed below, along with any default values
 defined by default and will not be configured.
 
 ```
+ready_timeout: 600
+```
+
+Maximum amount of time (in seconds) to poll the device to see if it is ready
+for configuration.
+
+```
 dns_primary: 8.8.8.8
 dns_secondary: 8.8.4.4
 ```
@@ -46,6 +53,16 @@ version:
 When set, upgrade PAN-OS on the device to this version. This upgrade should
 only be one PAN-OS version different from the one currently running (example:
 9.1.3 -> 10.0.2).
+
+```
+software_timeout: 600
+```
+
+Maximum amount of time (in seconds) each software download or installation job
+performed by this module is allowed to run before error.  A single call to
+`panos_software` can potentially trigger two download jobs and a single install
+job in the case of a full upgrade, so this step can potentially take 3x this
+value.
 
 ## Dependencies
 
