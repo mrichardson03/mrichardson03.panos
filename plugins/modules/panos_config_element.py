@@ -156,7 +156,7 @@ def xml_compare(one, two, excludes=None):
 
 
 def text_compare(one, two):
-    """ Compares the contents of two XML text attributes. """
+    """Compares the contents of two XML text attributes."""
     if not one and not two:
         return True
     return (one or "").strip() == (two or "").strip()

@@ -84,7 +84,7 @@ def cmd_xml(cmd):
 
 
 def booltostr(b):
-    """ Converts a boolean value to a string containing 'yes' or 'no'. """
+    """Converts a boolean value to a string containing 'yes' or 'no'."""
     if b:
         return "yes"
     else:
