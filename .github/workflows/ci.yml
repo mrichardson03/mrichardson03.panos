@@ -13,7 +13,7 @@ jobs:
         working-directory: ./ansible_collections/mrichardson03/panos
 
     env:
-      PIPENV_VENV_IN_PROJECT: enabled
+      PIPENV_VENV_IN_PROJECT: 1
 
     steps:
       - uses: actions/checkout@v2
