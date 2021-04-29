@@ -39,6 +39,10 @@ units:		## Run unit tests
 	ansible-test units --python $(python_version) --coverage
 	ansible-test coverage html
 
+.PHONY: ansible-lint
+ansible-lint:	## Run ansible-lint
+	ansible-lint roles
+
 .PHONY: integration
 integration:	## Run integration tests
 	$(MAKE) -C tests/integration $(CI)
