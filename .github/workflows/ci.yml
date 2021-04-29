@@ -27,17 +27,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv
 
-      # - name: Check pipenv cache
-      #   id: cache-pipenv
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.local/share/virtualenvs
-      #     key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pipenv-
+      - name: Check pipenv cache
+        id: cache-pipenv
+        uses: actions/cache@v2
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pipenv-
 
       - name: Install dependencies (if no cache hit)
-        # if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
           pipenv install --dev
 
