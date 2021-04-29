@@ -28,6 +28,9 @@ help:
 	@echo Available targets:
 	@fgrep "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sort
 
+.PHONY: tests
+tests:	check-format units sanity ansible-lint
+
 .PHONY: sanity
 sanity:		## Run sanity tests
 	ansible-test sanity --python $(python_version)
