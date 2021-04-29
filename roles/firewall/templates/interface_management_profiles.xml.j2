@@ -1,0 +1,44 @@
+{% for profile in interface_management_profiles %}
+<entry name="{{ profile.name }}">
+{% if profile.http is defined and profile.http is true %}
+    <http>yes</http>
+{% endif %}
+{% if profile.http_oscp is defined and profile.http_oscp is true %}
+    <http-oscp>yes</http-oscp>
+{% endif %}
+{% if profile.https is defined and profile.https is true %}
+    <https>yes</https>
+{% endif %}
+{% if profile.ping is defined and profile.ping is true %}
+    <ping>yes</ping>
+{% endif %}
+{% if profile.response_pages is defined and profile.response_pages is true %}
+    <response-pages>yes</response-pages>
+{% endif %}
+{% if profile.snmp is defined and profile.snmp is true %}
+    <snmp>yes</snmp>
+{% endif %}
+{% if profile.ssh is defined and profile.ssh is true %}
+    <ssh>yes</ssh>
+{% endif %}
+{% if profile.telnet is defined and profile.telnet is true %}
+    <telnet>yes</telnet>
+{% endif %}
+{% if profile.userid_service is defined and profile.userid_service is true %}
+    <userid-service>yes</userid-service>
+{% endif %}
+{% if profile.userid_syslog_listener_ssl is defined and profile.userid_syslog_listener_ssl is true %}
+    <userid-syslog-listener-ssl>yes</userid-syslog-listener-ssl>
+{% endif %}
+{% if profile.userid_syslog_listener_udp is defined and profile.userid_syslog_listener_udp is true %}
+    <userid-syslog-listener-udp>yes</userid-syslog-listener-udp>
+{% endif %}
+{% if profile.permitted_ip is defined %}
+    <permitted-ip>
+        {% for ip in profile.permitted_ip %}
+        <entry name="{{ ip }}" />
+        {% endfor %}
+    </permitted-ip>
+{% endif %}
+</entry>
+{% endfor %}

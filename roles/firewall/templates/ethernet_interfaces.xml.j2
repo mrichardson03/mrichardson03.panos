@@ -1,0 +1,23 @@
+{% for interface in ethernet_interfaces %}
+<entry name="{{ interface.name }}">
+    <layer3>
+        <ndp-proxy>
+            <enabled>no</enabled>
+        </ndp-proxy>
+    <lldp>
+        <enable>no</enable>
+    </lldp>
+    {% if interface.dhcp is defined and interface.dhcp is true %}
+    <dhcp-client>
+        <enable>yes</enable>
+        {% if interface.dhcp_create_default_route is defined and interface.dhcp_create_default_route is false %}
+        <create-default-route>no</create-default-route>
+        {% endif %}
+    </dhcp-client>
+    {% endif %}
+    {% if interface.interface_management_profile is defined %}
+    <interface-management-profile>{{ interface.interface_management_profile }}</interface-management-profile>
+    {% endif %}
+    </layer3>
+</entry>
+{% endfor %}
