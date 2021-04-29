@@ -1,0 +1,11 @@
+{% for zone in zones %}
+<entry name="{{ zone.name }}">
+    <network>
+        <{{ zone.type | default("layer3") }}>
+            {% for interface in zone.interfaces %}
+            <member>{{ interface }}</member>
+            {% endfor %}
+        </{{ zone.type | default("layer3") }}>
+    </network>
+</entry>
+{% endfor %}

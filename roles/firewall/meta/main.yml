@@ -1,0 +1,19 @@
+galaxy_info:
+  author: Michael Richardson
+  description: Configures a PAN-OS firewall
+  company: Palo Alto Networks
+  license: ISC
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: PAN-OS
+      versions:
+        - 9.1
+        - 10.0
+
+  galaxy_tags:
+    - paloaltonetworks
+    - panos
+    - panorama
+
+dependencies: []

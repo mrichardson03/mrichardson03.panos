@@ -1,0 +1,81 @@
+---
+- name: Interface management profiles
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+    element: |
+      <interface-management-profile>{{ lookup('template', 'interface_management_profiles.xml.j2') }}</interface-management-profile>
+  when: interface_management_profiles is defined
+  notify:
+    - Commit configuration
+
+- name: Interfaces
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/network/interface/ethernet
+    element: |
+      <ethernet>{{ lookup('template', 'ethernet_interfaces.xml.j2') }}</ethernet>
+  when: ethernet_interfaces is defined
+  notify:
+    - Commit configuration
+
+- name: Virtual routers
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/network/virtual-router
+    element: |
+      <virtual-router>{{ lookup('template', 'virtual_routers.xml.j2') }}</virtual-router>
+  when: virtual_routers is defined
+  notify:
+    - Commit configuration
+
+- name: Zones
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone
+    element: |
+      <zone>{{ lookup('template', 'zones.xml.j2') }}</zone>
+  when: zones is defined
+  notify:
+    - Commit configuration
+
+- name: Address objects
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address
+    element: |
+      <address>{{ lookup('template', 'address_objects.xml.j2') }}</address>
+  when: address_objects is defined
+  notify:
+    - Commit configuration
+
+- name: Service objects
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/service
+    element: |
+      <service>{{ lookup('template', 'service_objects.xml.j2') }}</service>
+  when: service_objects is defined
+  notify:
+    - Commit configuration
+
+- name: Security profile groups
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group
+    element: |
+      <profile-group>{{ lookup('template', 'security_profile_groups.xml.j2') }}</profile-group>
+  when: security_profile_groups is defined
+  notify:
+    - Commit configuration
+
+- name: Security rules
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules
+    element: |
+      <rules>{{ lookup('template', 'security_rules.xml.j2') }}</rules>
+  when: security_rules is defined
+  notify:
+    - Commit configuration
+
+- name: Create NAT rules
+  panos_config_element:
+    xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/nat/rules
+    element: |
+      <rules>{{ lookup('template', 'nat_rules.xml.j2') }}</rules>
+  when: nat_rules is defined
+  notify:
+    - Commit configuration

@@ -1,0 +1,34 @@
+{% for pg in security_profile_groups %}
+<entry name="{{ pg.name }}">
+{% if pg.virus is defined %}
+    <virus>
+        <member>{{ pg.virus }}</member>
+    </virus>
+{% endif %}
+{% if pg.spyware is defined %}
+    <spyware>
+        <member>{{ pg.spyware }}</member>
+    </spyware>
+{% endif %}
+{% if pg.vulnerability is defined %}
+    <vulnerability>
+        <member>{{ pg.vulnerability }}</member>
+    </vulnerability>
+{% endif %}
+{% if pg.url is defined %}
+    <url-filtering>
+        <member>{{ pg.url }}</member>
+    </url-filtering>
+{% endif %}
+{% if pg.file_blocking is defined %}
+    <file-blocking>
+        <member>{{ pg.file_blocking }}</member>
+    </file-blocking>
+{% endif %}
+{% if pg.wildfire is defined %}
+    <wildfire-analysis>
+        <member>{{ pg.wildfire }}</member>
+    </wildfire-analysis>
+{% endif %}
+</entry>
+{% endfor %}

@@ -1,0 +1,46 @@
+{% for rule in nat_rules %}
+<entry name="{{ rule.name }}">
+    <to>
+        <member>{{ rule.destination_zone }}</member>
+    </to>
+    <from>
+        {% for zone in rule.source_zone %}
+        <member>{{ zone }}</member>
+        {% endfor %}
+    </from>
+    <source>
+        {% for source_ip in rule.source_ip | default(["any"]) %}
+        <member>{{ source_ip }}</member>
+        {% endfor %}
+    </source>
+    <destination>
+        {% for destination_ip in rule.destination_ip | default(["any"]) %}
+        <member>{{ destination_ip }}</member>
+        {% endfor %}
+    </destination>
+    <service>{{ rule.service | default("any") }}</service>
+    {% if rule.source_translation is defined and rule.source_translation is true %}
+    <source-translation>
+        {% if rule.source_translation_type is defined and rule.source_translation_type == 'dynamic-ip-and-port' %}
+        <dynamic-ip-and-port>
+            {% if rule.source_translation_interface is defined %}
+            <interface-address>
+                <interface>{{ rule.source_translation_interface }}</interface>
+            </interface-address>
+            {% endif %}
+        </dynamic-ip-and-port>
+        {% endif %}
+    </source-translation>
+    {% endif %}
+    {% if rule.destination_translation is defined and rule.destination_translation is true %}
+    <destination-translation>
+        {% if rule.destination_translated_port %}
+        <translated-port>{{ rule.destination_translated_port }}</translated-port>
+        {% endif %}
+        {% if rule.destination_translated_address %}
+        <translated-address>{{ rule.destination_translated_address }}</translated-address>
+        {% endif %}
+    </destination-translation>
+    {% endif %}
+</entry>
+{% endfor %}

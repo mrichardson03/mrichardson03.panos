@@ -1,0 +1,104 @@
+{% for rule in security_rules %}
+<entry name="{{ rule.name }}">
+{% if rule.description is defined %}
+    <description>{{ rule.description }}</description>
+{% endif %}
+    <to>
+    {% for source_zone in rule.source_zone %}
+        <member>{{ source_zone }}</member>
+    {% endfor %}
+    </to>
+    <from>
+    {% for destination_zone in rule.destination_zone %}
+        <member>{{ destination_zone }}</member>
+    {% endfor %}
+    </from>
+    <source>
+    {% for source_ip in rule.source_ip | default(['any'])%}
+        <member>{{ source_ip }}</member>
+    {% endfor %}
+    </source>
+    <destination>
+    {% for destination_ip in rule.destination_ip | default(['any'])%}
+        <member>{{ destination_ip }}</member>
+    {% endfor %}
+    </destination>
+    {% if rule.source_user is defined %}
+    <source-user>
+    {% for source_user in rule.source_user %}
+        <member>{{ source_user }}</member>
+    {% endfor %}
+    </source-user>
+    {% endif %}
+    <category>
+    {% for category in rule.category | default(['any'])%}
+        <member>{{ category }}</member>
+    {% endfor %}
+    </category>
+    <application>
+    {% for application in rule.application | default(['any']) %}
+        <member>{{ application }}</member>
+    {% endfor %}
+    </application>
+    <service>
+    {% for service in rule.service | default(['application-default']) %}
+        <member>{{ service }}</member>
+    {% endfor %}
+    </service>
+{% if rule.security_profile_group is defined %}
+    <profile-setting>
+        <group>
+            <member>{{ rule.security_profile_group }}</member>
+        </group>
+    </profile-setting>
+{% elif rule.security_profiles is defined %}
+    <profile-setting>
+        <profiles>
+        {% if rule.security_profiles.virus is defined %}
+            <virus>
+                <member>{{ rule.security_profiles.virus }}</member>
+            </virus>
+        {% endif %}
+        {% if rule.security_profiles.spyware is defined %}
+            <spyware>
+                <member>{{ rule.security_profiles.spyware }}</member>
+            </spyware>
+        {% endif %}
+        {% if rule.security_profiles.vulnerability is defined %}
+            <vulnerability>
+                <member>{{ rule.security_profiles.vulnerability }}</member>
+            </vulnerability>
+        {% endif %}
+        {% if rule.security_profiles.url is defined %}
+            <url-filtering>
+                <member>{{ rule.security_profiles.url }}</member>
+            </url-filtering>
+        {% endif %}
+        {% if rule.security_profiles.file_blocking is defined %}
+            <file-blocking>
+                <member>{{ rule.security_profiles.file_blocking }}</member>
+            </file-blocking>
+        {% endif %}
+        {% if rule.security_profiles.wildfire is defined %}
+            <wildfire-analysis>
+                <member>{{ rule.security_profiles.wildfire }}</member>
+            </wildfire-analysis>
+        {% endif %}
+        </profiles>
+    </profile-setting>
+{% endif %}
+    <action>{{ rule.action | default("allow") }}</action>
+{% if rule.disabled is defined and rule.disabled is true %}
+    <disabled>yes</disabled>
+{% endif %}
+{% if rule.tags is defined %}
+    <tag>
+    {% for tag in rule.tags %}
+        <member>{{ tag }}</member>
+    {% endfor %}
+{% endif %}
+{% if rule.group_tag is defined %}
+    <group-tag>{{ rule.group_tag }}</group-tag>
+{% endif %}
+</entry>
+{% endfor %}

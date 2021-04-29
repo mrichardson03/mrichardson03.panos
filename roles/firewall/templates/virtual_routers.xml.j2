@@ -1,0 +1,11 @@
+{% for vr in virtual_routers %}
+<entry name="{{ vr.name }}">
+    <interface>
+    {% if vr.interfaces is defined %}
+    {% for interface in vr.interfaces %}
+        <member>{{ interface }}</member>
+    {% endfor %}
+    </interface>
+    {% endif %}
+</entry>
+{% endfor %}

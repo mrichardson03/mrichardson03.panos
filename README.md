@@ -28,6 +28,8 @@ This collection is **not backwards compatible** with `paloaltonetworks.panos`.
 
 Ansible roles for common tasks are also included:
 
+- [firewall](https://github.com/mrichardson03/mrichardson03.panos/tree/develop/roles/firewall):
+  Performs configuration of a PAN-OS firewall.
 - [onboard](https://github.com/mrichardson03/mrichardson03.panos/tree/develop/roles/onboard):
   Performs common initial configuration steps: licensing, install latest content,
   upgrade to a new PAN-OS version.

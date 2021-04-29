@@ -1,0 +1,4 @@
+---
+module_defaults:
+  panos_config_element:
+    edit: true

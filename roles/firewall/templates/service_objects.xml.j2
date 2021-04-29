@@ -1,0 +1,20 @@
+{% for object in service_objects %}
+<entry name="{{ object.name }}">
+    <protocol>
+        <{{ object.protocol }}>
+            <port>{{ object.destination_port }}</port>
+            <override><no/></override>
+        </{{ object.protocol }}>
+    </protocol>
+    {% if object.description is defined %}
+    <description>{{ object.description }}</description>
+    {% endif %}
+    {% if object.tags is defined %}
+    <tag>
+        {% for t in object.tags %}
+            <member>{{ t }}</member>
+        {% endfor %}
+    </tag>
+    {% endif %}
+</entry>
+{% endfor %}
