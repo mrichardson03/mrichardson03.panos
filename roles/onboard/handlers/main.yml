@@ -2,11 +2,9 @@
 - name: Commit configuration
   panos_commit:
 
-- name: Device rebooted
-  block:
-  - name: Wait for reboot
-    wait_for:
-      timeout: 30
+- name: Wait for reboot
+  wait_for:
+    timeout: 30
 
-  - name: Wait until ready
-    panos_check:
+- name: Wait until ready
+  panos_check:

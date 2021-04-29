@@ -42,4 +42,5 @@
     restart: true
   when: version is defined
   notify:
-    - Device rebooted
+    - Wait for reboot
+    - Wait until ready
