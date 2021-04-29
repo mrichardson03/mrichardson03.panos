@@ -1,7 +1,8 @@
 ---
 - name: Configure DNS servers
   panos_config_element:
-    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting/servers
+    edit: True
     element: |
       <servers>
         <primary>{{ dns_primary }}</primary>
@@ -35,18 +36,18 @@
     - lic_key is failed
     - "'same as old' not in lic_key.msg"
 
-- name: Upgrade PAN-OS version
+- name: 'Install PAN-OS {{ version }}'
   panos_software:
     version: '{{ version }}'
     restart: True
-  register: upgrade
+  register: install
   when: version is defined
 
 - name: Wait for reboot
   wait_for:
     timeout: 30
-  when: upgrade is changed
+  when: install is changed
 
 - name: Wait until ready
   panos_check:
-  when: upgrade is changed
+  when: install is changed
