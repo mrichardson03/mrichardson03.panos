@@ -9,6 +9,7 @@ on:
     types:
       - completed
 
+jobs:
   release:
     name: release
     runs-on: ubuntu-latest
