@@ -88,4 +88,3 @@
   when: nat_rules is defined
   notify:
     - Commit configuration
-
