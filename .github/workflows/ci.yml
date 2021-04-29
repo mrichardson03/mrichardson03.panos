@@ -60,5 +60,3 @@ jobs:
       - name: ansible-galaxy collection build
         run:
           pipenv run make build
-
-
