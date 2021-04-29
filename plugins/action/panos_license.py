@@ -33,7 +33,7 @@ class ActionModule(ActionBase):
     _VALID_ARGS = frozenset(["authcode"])
 
     def _apply_authcode(self, authcode):
-        """ Activates features using an authcode. """
+        """Activates features using an authcode."""
         cmd = "<request><license><fetch><auth-code>{0}</auth-code></fetch></license></request>".format(
             authcode
         )
@@ -51,7 +51,7 @@ class ActionModule(ActionBase):
             return False
 
     def _fetch_licenses(self):
-        """ Retrieves info on licensees. """
+        """Retrieves info on licensees."""
         cmd = "request license info"
 
         try:

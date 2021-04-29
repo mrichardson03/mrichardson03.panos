@@ -22,6 +22,7 @@ importlib-metadata = "*"
 dataclasses = "*"
 yamllint = "*"
 six = "*"
+ansible-lint = "*"
 
 [requires]
 python_version = "3.6"

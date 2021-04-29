@@ -1,7 +1,7 @@
 ---
 fw_name: '{{ inventory_hostname }}'
 
-configure_dns: False
+configure_dns: false
 dns_primary: 8.8.8.8
 dns_secondary: 8.8.4.4
 
@@ -19,4 +19,4 @@ syslog_server: 192.0.2.2
 
 api_key_lifetime: 525600
 
-include_panw_edl: False
+include_panw_edl: false

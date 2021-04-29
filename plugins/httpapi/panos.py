@@ -79,7 +79,7 @@ _PANOS_API_ERROR_CODES = {
 
 
 class PanOSAPIError(ConnectionError):
-    """ Exception representing a PAN-OS API error. """
+    """Exception representing a PAN-OS API error."""
 
     def __init__(self, code, message):
         if code not in _PANOS_API_ERROR_CODES:

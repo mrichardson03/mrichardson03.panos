@@ -2,7 +2,7 @@
 - name: Configure DNS servers
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting/servers
-    edit: True
+    edit: true
     element: |
       <servers>
         <primary>{{ dns_primary }}</primary>
@@ -11,11 +11,11 @@
         {% endif %}
       </servers>
   when: dns_primary is defined
-  register: dns
+  notify:
+    - Commit configuration
 
-- name: Commit changes
-  panos_commit:
-  when: dns is changed
+- name: Flush handlers
+  meta: flush_handlers
 
 - name: License firewall
   panos_license:
@@ -29,7 +29,7 @@
 - name: Set licensing API key
   panos_op:
     cmd: "<request><license><api-key><set><key>{{ licensing_api_key }}</key></set></api-key></license></request>"
-    cmd_is_xml: True
+    cmd_is_xml: true
   register: lic_key
   when: licensing_api_key is defined
   failed_when:
@@ -39,15 +39,8 @@
 - name: 'Install PAN-OS {{ version }}'
   panos_software:
     version: '{{ version }}'
-    restart: True
-  register: install
+    restart: true
   when: version is defined
-
-- name: Wait for reboot
-  wait_for:
-    timeout: 30
-  when: install is changed
-
-- name: Wait until ready
-  panos_check:
-  when: install is changed
+  notify:
+    - Wait for reboot
+    - Wait until ready

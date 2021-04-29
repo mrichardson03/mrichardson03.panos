@@ -28,6 +28,9 @@ help:
 	@echo Available targets:
 	@fgrep "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sort
 
+.PHONY: tests
+tests:	check-format units sanity ansible-lint
+
 .PHONY: sanity
 sanity:		## Run sanity tests
 	ansible-test sanity --python $(python_version)
@@ -38,6 +41,10 @@ units:		## Run unit tests
 	-ansible-test coverage erase # On first run, there is nothing to erase.
 	ansible-test units --python $(python_version) --coverage
 	ansible-test coverage html
+
+.PHONY: ansible-lint
+ansible-lint:	## Run ansible-lint
+	ansible-lint roles
 
 .PHONY: integration
 integration:	## Run integration tests
