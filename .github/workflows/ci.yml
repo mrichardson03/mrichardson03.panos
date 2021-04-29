@@ -12,6 +12,9 @@ jobs:
       run:
         working-directory: ./ansible_collections/mrichardson03/panos
 
+    env:
+      PIPENV_VENV_IN_PROJECT: enabled
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -31,7 +34,7 @@ jobs:
         id: cache-pipenv
         uses: actions/cache@v2
         with:
-          path: ~/.local/share/virtualenvs
+          path: .venv/
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
