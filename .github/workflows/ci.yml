@@ -53,6 +53,10 @@ jobs:
         run:
           pipenv run make units
 
+      - name: ansible-lint roles
+        run:
+          pipenv run make ansible-lint
+
       - name: ansible-galaxy collection build
         run:
           pipenv run make build
