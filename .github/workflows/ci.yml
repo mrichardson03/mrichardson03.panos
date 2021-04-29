@@ -62,7 +62,8 @@ jobs:
 
   release:
     name: release
-    if: github.even_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test]
     runs-on: ubuntu-latest
 
     steps:
