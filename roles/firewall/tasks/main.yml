@@ -2,7 +2,6 @@
 - name: Interface management profiles
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
-    edit: True
     element: |
       <interface-management-profile>{{ lookup('template', 'interface_management_profiles.xml.j2') }}</interface-management-profile>
   when: interface_management_profiles is defined
@@ -12,7 +11,6 @@
 - name: Interfaces
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/network/interface/ethernet
-    edit: True
     element: |
       <ethernet>{{ lookup('template', 'ethernet_interfaces.xml.j2') }}</ethernet>
   when: ethernet_interfaces is defined
@@ -22,7 +20,6 @@
 - name: Virtual routers
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/network/virtual-router
-    edit: True
     element: |
       <virtual-router>{{ lookup('template', 'virtual_routers.xml.j2') }}</virtual-router>
   when: virtual_routers is defined
@@ -32,7 +29,6 @@
 - name: Zones
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone
-    edit: True
     element: |
       <zone>{{ lookup('template', 'zones.xml.j2') }}</zone>
   when: zones is defined
@@ -42,7 +38,6 @@
 - name: Address objects
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address
-    edit: True
     element: |
       <address>{{ lookup('template', 'address_objects.xml.j2') }}</address>
   when: address_objects is defined
@@ -52,7 +47,6 @@
 - name: Service objects
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/service
-    edit: True
     element: |
       <service>{{ lookup('template', 'service_objects.xml.j2') }}</service>
   when: service_objects is defined
@@ -62,7 +56,6 @@
 - name: Security profile groups
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group
-    edit: True
     element: |
       <profile-group>{{ lookup('template', 'security_profile_groups.xml.j2') }}</profile-group>
   when: security_profile_groups is defined
@@ -72,7 +65,6 @@
 - name: Security rules
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules
-    edit: True
     element: |
       <rules>{{ lookup('template', 'security_rules.xml.j2') }}</rules>
   when: security_rules is defined
@@ -82,7 +74,6 @@
 - name: Create NAT rules
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/nat/rules
-    edit: True
     element: |
       <rules>{{ lookup('template', 'nat_rules.xml.j2') }}</rules>
   when: nat_rules is defined
