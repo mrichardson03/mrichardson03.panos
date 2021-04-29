@@ -1,6 +1,7 @@
 # PAN-OS Ansible Collection - mrichardson03.panos
 
 ![GitHub Actions](https://github.com/mrichardson03/mrichardson03.panos/workflows/CI/badge.svg)
+![Version on Galaxy](https://img.shields.io/badge/dynamic/json?style=flat&label=Ansible+Galaxy&prefix=v&url=https://galaxy.ansible.com/api/v2/collections/mrichardson03/panos/&query=latest_version.version)
 
 Ansible collection for automating configuration and operational tasks on
 Palo Alto Networks Next Generation Firewalls using the PAN-OS API.
