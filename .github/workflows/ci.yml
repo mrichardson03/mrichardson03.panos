@@ -1,10 +1,7 @@
-name: CI/CD
+name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
   pull_request:
 
 jobs:
@@ -60,51 +57,4 @@ jobs:
         run:
           pipenv run make build
 
-  automerge:
-    name: auto-merge
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Auto-merge pull requests from dependabot (patches only)
-        uses: ridedott/merge-me-action@master
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_LOGIN: dependabot[bot]
-          PRESET: DEPENDABOT_PATCH
 
-  release:
-    name: release
-    if: github.event_name == 'push' && github.ref != 'refs/heads/develop'
-    needs: [test]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Galaxy auth
-        run: |
-          mkdir -p ~/.ansible
-          echo "token: $GALAXY_API_KEY" > ~/.ansible/galaxy_token
-        env:
-          GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
-        shell: bash
-
-      - name: Create release and publish
-        id: release
-        uses: cycjimmy/semantic-release-action@v2
-        with:
-          semantic_version: 17.1.1
-          extra_plugins: |
-            conventional-changelog-conventionalcommits@^4.4.0
-            @semantic-release/git@^9.0.0
-            @semantic-release/exec@^5.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Store built collection
-        uses: actions/upload-artifact@v2
-        with:
-          name: collection
-          path: |
-            *.tar.gz
