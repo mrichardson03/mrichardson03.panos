@@ -74,11 +74,17 @@ def is_valid_upgrade(current, target):
 class ActionModule(ActionBase):
     TRANSFERS_FILES = False
     _VALID_ARGS = frozenset(
-        ["version", "sync_to_peer", "download", "install", "restart"]
+        ["version", "sync_to_peer", "download", "install", "restart", "timeout"]
     )
 
     def _do_upgrade(
-        self, current, target, sync_to_peer=True, download=True, install=True
+        self,
+        current,
+        target,
+        sync_to_peer=True,
+        download=True,
+        install=True,
+        timeout=600,
     ):
         display.debug(
             "panos_software: performing upgrade ({0} -> {1})".format(current, target)
@@ -101,7 +107,7 @@ class ActionModule(ActionBase):
                 )
             )
 
-            self._connection.op(cmd, poll=True, poll_interval=10)
+            self._connection.op(cmd, poll=True, poll_interval=10, poll_timeout=timeout)
 
         if download:
             display.debug("panos_software: download target version: {0}".format(target))
@@ -114,7 +120,7 @@ class ActionModule(ActionBase):
                 )
             )
 
-            self._connection.op(cmd, poll=True, poll_interval=10)
+            self._connection.op(cmd, poll=True, poll_interval=10, poll_timeout=timeout)
 
         if install:
             display.debug("panos_software: install target version: {0}".format(target))
@@ -124,7 +130,7 @@ class ActionModule(ActionBase):
                 "</install></software></system></request>".format(target)
             )
 
-            self._connection.op(cmd, poll=True, poll_interval=10)
+            self._connection.op(cmd, poll=True, poll_interval=10, poll_timeout=timeout)
 
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:
@@ -141,6 +147,7 @@ class ActionModule(ActionBase):
         download = bool(self._task.args.get("download", True))
         install = bool(self._task.args.get("install", True))
         restart = bool(self._task.args.get("restart", False))
+        timeout = int(self._task.args.get("timeout", 600))
 
         current = PanOSVersion(self._connection.version()["sw-version"])
 

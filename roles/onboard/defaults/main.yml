@@ -1,5 +1,9 @@
 ---
+ready_timeout: 600
+
 dns_primary: 8.8.8.8
 dns_secondary: 8.8.4.4
 
 install_content: true
+
+software_timeout: 600

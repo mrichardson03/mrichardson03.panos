@@ -1,4 +1,8 @@
 ---
+- name: Check ready
+  panos_check:
+    timeout: '{{ ready_timeout }}'
+
 - name: Configure DNS servers
   panos_config_element:
     xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting/servers
@@ -40,6 +44,7 @@
   panos_software:
     version: '{{ version }}'
     restart: true
+    timeout: '{{ software_timeout }}'
   when: version is defined
   notify:
     - Wait for reboot

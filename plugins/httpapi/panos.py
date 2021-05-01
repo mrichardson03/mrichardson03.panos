@@ -389,7 +389,15 @@ class HttpApi(HttpApiBase):
         """
         pass
 
-    def op(self, cmd, is_xml=True, validate=True, poll=False, poll_interval=5):
+    def op(
+        self,
+        cmd,
+        is_xml=True,
+        validate=True,
+        poll=False,
+        poll_interval=5,
+        poll_timeout=600,
+    ):
         """
         Runs an operational command.
 
@@ -398,7 +406,8 @@ class HttpApi(HttpApiBase):
         :param validate: Whether the response should be validated.
         :param poll: For use with a long running task.  When set to true, poll
         until that task completes.
-        :param poll_interval:  How often to poll for job completion (in seconds).
+        :param poll_interval: How often to poll for job completion (in seconds).
+        :param poll_timeout: Maximum amount of time to poll (in seconds).
         :returns: Response data.
 
         Reference:
@@ -423,7 +432,9 @@ class HttpApi(HttpApiBase):
             job_element = op_result.find(".//job")
             job_id = job_element.text
 
-            return self.poll_for_job(job_id, interval=poll_interval)
+            return self.poll_for_job(
+                job_id, interval=poll_interval, timeout=poll_timeout
+            )
         else:
             return response
 
