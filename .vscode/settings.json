@@ -5,4 +5,5 @@
     "python.linting.enabled": false,
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
+    "python.pythonPath": ".venv/bin/python3.8",
 }

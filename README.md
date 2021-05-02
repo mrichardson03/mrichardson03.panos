@@ -161,6 +161,6 @@ for the full list of options.
 
 ## Python Compatability
 
-This collection is written for Python 3.6.8, which is the version used in the
-default Ansible Tower/AWX virtual environment. Newer versions of Python will
-likely work, but are not tested.
+This collection is written for Python 3.8, which is the version used in the
+default Ansible AWX virtual environment. Newer versions of Python will likely
+work, but are not tested.
