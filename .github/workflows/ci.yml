@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2.2.1
         with:
-          python-version: 3.6.8
+          python-version: 3.8
 
       - name: Install pipenv
         run: |
@@ -31,9 +31,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          key: ${{ runner.os }}-pipenv-v2-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pipenv-
+            ${{ runner.os }}-pipenv-v2-
 
       - name: Install dependencies
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
