@@ -17,6 +17,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import requests
+
 DOCUMENTATION = """
 ---
 author:
@@ -537,6 +539,20 @@ class HttpApi(HttpApiBase):
             return {"X-PAN-KEY": self.api_key()}
         else:
             return None
+
+    def import_file(self, filename, category):
+
+        params = {"type": "import", "category": category, "key": self.api_key()}
+
+        remote_addr = self.connection.get_option("host")
+        remote_port = self.connection.get_option("port")
+        url = "https://{0}:{1}/api".format(remote_addr, remote_port)
+
+        files = {"file": open(filename, "rb")}
+
+        r = requests.post(url, params=params, files=files, verify=False)
+
+        return self._validate_response(r.status_code, r.text)
 
     def send_request(
         self,
