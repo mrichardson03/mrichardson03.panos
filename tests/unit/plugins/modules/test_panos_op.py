@@ -16,26 +16,156 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import pytest
 from ansible_collections.mrichardson03.panos.plugins.modules import panos_op
 
 from .common.utils import ModuleTestCase
+
+SHOW_JOBS_ID_1 = """
+<response status=\"success\">
+    <result>
+        <job>
+            <tenq>2021/05/03 06:52:58</tenq>
+            <tdeq>06:52:58</tdeq>
+            <id>1</id>
+            <user></user>
+            <type>AutoCom</type>
+            <status>FIN</status>
+            <queued>NO</queued>
+            <stoppable>no</stoppable>
+            <result>OK</result>
+            <tfin>06:53:27</tfin>
+            <description></description>
+            <positionInQ>0</positionInQ>
+            <progress>100</progress>
+            <details>
+                <line>Configuration committed successfully</line>
+                <line>Successfully committed last configuration</line>
+            </details>
+            <warnings></warnings>
+        </job>
+    </result>
+</response>
+"""
+
+SHOW_JOBS_ALL_SINGLE = """
+<response status=\"success\">
+    <result>
+        <job>
+            <tenq>2021/05/03 06:52:58</tenq>
+            <tdeq>06:52:58</tdeq>
+            <id>1</id>
+            <user></user>
+            <type>AutoCom</type>
+            <status>FIN</status>
+            <queued>NO</queued>
+            <stoppable>no</stoppable>
+            <result>OK</result>
+            <tfin>06:53:27</tfin>
+            <description></description>
+            <positionInQ>0</positionInQ>
+            <progress>100</progress>
+            <details>
+                <line>Configuration committed successfully</line>
+                <line>Successfully committed last configuration</line>
+            </details>
+            <warnings></warnings>
+        </job>
+    </result>
+</response>
+"""
+
+SHOW_JOBS_ALL_MULTI = """
+<response status=\"success\">
+    <result>
+        <job>
+            <tenq>2021/05/03 10:18:47</tenq>
+            <tdeq>10:18:47</tdeq>
+            <id>3</id><user>admin</user>
+            <type>WildFire</type>
+            <status>FIN</status>
+            <queued>NO</queued>
+            <stoppable>no</stoppable>
+            <result>OK</result>
+            <tfin>10:18:52</tfin>
+            <description></description>
+            <positionInQ>0</positionInQ>
+            <progress>10:18:52</progress>
+            <details>
+                <line>Configuration committed successfully</line>
+                <line>Successfully committed last configuration</line>
+            </details>
+            <warnings></warnings>
+        </job>
+        <job>
+            <tenq>2021/05/03 06:52:58</tenq>
+            <tdeq>06:52:58</tdeq>
+            <id>1</id>
+            <user></user>
+            <type>AutoCom</type>
+            <status>FIN</status>
+            <queued>NO</queued>
+            <stoppable>no</stoppable>
+            <result>OK</result>
+            <tfin>06:53:27</tfin>
+            <description></description>
+            <positionInQ>0</positionInQ>
+            <progress>100</progress>
+            <details>
+                <line>Configuration committed successfully</line>
+                <line>Successfully committed last configuration</line>
+            </details>
+            <warnings></warnings>
+        </job>
+    </result>
+</response>
+"""
 
 
 class TestPanosOp(ModuleTestCase):
     module = panos_op
 
-    def test_safe_command(self, connection_mock):
-        connection_mock.op.return_value = "<request><result>foo</result></request>"
+    @pytest.mark.parametrize(
+        "command,is_xml,changed",
+        [
+            ("show system info", False, False),
+            ("<show><system><info></info></system></show>", True, False),
+            ("request reboot system", False, True),
+        ],
+    )
+    def test_safe_commands(self, command, is_xml, changed, connection_mock):
+        connection_mock.op.return_value = "<response><result>foo</result></response>"
 
-        result = self._run_module({"cmd": "show system info", "cmd_is_xml": False})
+        result = self._run_module({"cmd": command, "cmd_is_xml": is_xml})
+
+        assert result["changed"] == changed
+
+    def test_job_id(self, connection_mock):
+        connection_mock.op.return_value = SHOW_JOBS_ID_1
+
+        result = self._run_module({"job_id": 1})
 
         assert not result["changed"]
-        assert result["stdout_xml"] == "<request><result>foo</result></request>"
-        assert result["stdout"] == '{"request": {"result": "foo"}}'
 
-    def test_unsafe_command(self, connection_mock):
-        connection_mock.op.return_value = "<request><result>foo</result></request>"
+        assert result["job"]["id"] == "1"
+        assert result["job"]["result"] == "OK"
 
-        result = self._run_module({"cmd": "request reboot system", "cmd_is_xml": False})
+    @pytest.mark.parametrize("response", [SHOW_JOBS_ALL_SINGLE, SHOW_JOBS_ALL_MULTI])
+    def test_job_type(self, response, connection_mock):
+        connection_mock.op.return_value = response
 
-        assert result["changed"]
+        result = self._run_module({"job_type": "AutoCom"})
+
+        assert not result["changed"]
+
+        assert result["job"]["id"] == "1"
+        assert result["job"]["result"] == "OK"
+
+    def test_job_type_not_found(self, connection_mock):
+        connection_mock.op.return_value = (
+            "<response status='success'><result/></response>"
+        )
+
+        result = self._run_module_fail({"job_type": "AutoCom"})
+
+        assert result["msg"] == "Requested job not found."

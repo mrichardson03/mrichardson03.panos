@@ -18,6 +18,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import re
+from functools import reduce
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection, ConnectionError
@@ -89,3 +90,19 @@ def booltostr(b):
         return "yes"
     else:
         return "no"
+
+
+def get_nested_key(d, key_list):
+    """
+    Access a nested key within a dictionary safely.
+
+    Example:
+
+    For the dictionary d = {'one': {'two': {'three': 'four'}}},
+    get_nested_key(d, ['one', 'two', 'three']) will return 'four'.
+
+    :param d: Dictionary
+    :param key_list: List of keys, in decending order.
+    """
+
+    return reduce(lambda val, key: val.get(key) if val else None, key_list, d)
