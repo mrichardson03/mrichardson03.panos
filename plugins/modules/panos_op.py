@@ -97,70 +97,6 @@ from ansible_collections.mrichardson03.panos.plugins.module_utils.panos import (
 )
 
 
-def execute_op_cmd(conn, cmd, cmd_is_xml):
-    """Executes an operational command."""
-    changed = True
-
-    safe_cmds = ["diff", "show"]
-    safe_xml_cmds = ["<diff>", "<show>"]
-
-    if cmd_is_xml:
-        for safe_xml_cmd in safe_xml_cmds:
-            if cmd.find(safe_xml_cmd) == 0:
-                changed = False
-
-    else:
-        for safe_cmd in safe_cmds:
-            if cmd.find(safe_cmd) == 0:
-                changed = False
-
-    xml_output = conn.op(cmd, is_xml=cmd_is_xml)
-    obj_dict = xmltodict.parse(xml_output)
-
-    return {"changed": changed, "stdout": xml_output, "stdout_dict": obj_dict}
-
-
-def show_job_id(conn, job_id):
-    """Retrieves job results for a given job id."""
-    results = execute_op_cmd(conn, f"<show><jobs><id>{job_id}</id></jobs></show>", True)
-    job_results = get_nested_key(results, ["stdout_dict", "response", "result", "job"])
-
-    results["job"] = {}
-
-    for k, v in job_results.items():
-        if v is not None:
-            results["job"][k] = v
-
-    del results["stdout_dict"]
-    return results
-
-
-def check_job_type(conn, job_type):
-    """Retrieves the most recent results for a given job type."""
-    results = execute_op_cmd(conn, "show jobs all", False)
-    jobs = get_nested_key(results, ["stdout_dict", "response", "result", "job"])
-
-    results["job"] = None
-
-    if jobs:
-        if isinstance(jobs, dict):
-            jobs = [jobs]
-
-        for j in jobs:
-            if j["type"] == job_type:
-                results["job"] = {}
-
-                for k, v in j.items():
-                    if v is not None:
-                        results["job"][k] = v
-
-    if results["job"] is None:
-        raise ConnectionError("Requested job not found.")
-
-    del results["stdout_dict"]
-    return results
-
-
 def main():
     module = PanOSAnsibleModule(
         argument_spec=dict(
@@ -179,8 +115,27 @@ def main():
     results = None
 
     try:
-        results = execute_op_cmd(module.connection, cmd, cmd_is_xml)
+        changed = True
+
+        safe_cmds = ["diff", "show"]
+        safe_xml_cmds = ["<diff>", "<show>"]
+
+        if cmd_is_xml:
+            for safe_xml_cmd in safe_xml_cmds:
+                if cmd.find(safe_xml_cmd) == 0:
+                    changed = False
+
+        else:
+            for safe_cmd in safe_cmds:
+                if cmd.find(safe_cmd) == 0:
+                    changed = False
+
+        xml_output = module.connection.op(cmd, is_xml=cmd_is_xml)
+        obj_dict = xmltodict.parse(xml_output)
+
+        results = {"changed": changed, "stdout": xml_output, "stdout_dict": obj_dict}
         module.exit_json(**results)
+
     except ConnectionError as e:  # pragma: no cover
         module.fail_json(msg="{0}".format(e))
 
