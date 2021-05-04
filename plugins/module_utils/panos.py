@@ -84,14 +84,6 @@ def cmd_xml(cmd):
     return xml
 
 
-def booltostr(b):
-    """Converts a boolean value to a string containing 'yes' or 'no'."""
-    if b:
-        return "yes"
-    else:
-        return "no"
-
-
 def get_nested_key(d, key_list):
     """
     Access a nested key within a dictionary safely.
